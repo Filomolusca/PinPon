@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - tile
+  - pin
+  - base
+  - pontos
+  - pontos2
+  - pon
+  - bola
+  - bolaOriginal
+  - limiteSeagull
+  - seagull
+  - seagullPin
+  - seagullPon
+  - spawnBall
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - iceberg
+  - tile
+  - bola
+  - pin
+  - limites
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: iceberg
+    uniqueID: 380618839
+    locked: 0
+  - name: tile
+    uniqueID: 3009908389
+    locked: 0
+  - name: pin
+    uniqueID: 1144109331
+    locked: 0
+  - name: bola
+    uniqueID: 3281915807
+    locked: 0
+  - name: UI
+    uniqueID: 1150771695
+    locked: 0
