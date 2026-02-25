@@ -32,13 +32,17 @@ public class Seagull : MonoBehaviour
                 audioSource.enabled = true;
             }
     }
-
+    void OnEnable()
+    {
+        gameManager = FindObjectOfType<GameManager>();   
+    }
     // Update is called once per frame
     void Update()
     {
         rb.velocity = new Vector2(0, speed);
         if (SeagullPinHit)
         {
+            
             speed = 0;
             gameManager.SeagullKilled(this.gameObject);
             SeagullPinHit = false;           

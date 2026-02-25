@@ -84,9 +84,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38dce96f21a9b6f4abb10fa26411efed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 3
-  speedIncrement: 0.3
-  speedDecrement: 0.3
+  speed: 5
+  speedIncrement: 0.5
+  speedDecrement: 0
   rb: {fileID: 7576166899250106762}
   iceberg: {fileID: 0}
   Pin: {fileID: 0}

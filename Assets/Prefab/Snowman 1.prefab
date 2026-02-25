@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2549912606535366565}
   - component: {fileID: 6977375636673381550}
   - component: {fileID: 7463307651373754423}
+  - component: {fileID: 6736877515799905137}
   m_Layer: 0
   m_Name: Snowman 1
   m_TagString: Untagged
@@ -105,6 +106,7 @@ MonoBehaviour:
   initialHP: 2
   maxBalls: 3
   ballPrefab: {fileID: 4810671198782884150, guid: 8bbfc450bbc8ff540b6eee547ec35146, type: 3}
+  originalBall: {fileID: 0}
   spawnPoint: {fileID: 0}
   hasCollided: 0
   animator: {fileID: 444105648399903292}
@@ -359,3 +361,15 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6736877515799905137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588996842569694153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 368b427d3812b924c89e9c546dba1ddc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

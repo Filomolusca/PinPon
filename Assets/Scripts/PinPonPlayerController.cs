@@ -14,10 +14,19 @@ namespace PinPon
         private FrameInput _frameInput;
         private Vector2 _frameVelocity;
         private bool _cachedQueryStartInColliders;
+        
+        private bool _isFacingLeft;
 
         public bool Pin;
         public AudioClip jumpSound;
         private AudioSource audioSource;
+        
+        [Header("Hitting")]
+        [SerializeField] private GameObject _racquetObject;
+        [SerializeField] private float _hitCooldown = 0.5f;
+        private float _timeLastHit = float.MinValue;
+        private Vector3 _racquetOriginalLocalPos;
+        private Vector3 _racquetOriginalLocalScale;
 
         #region Interface
 
@@ -37,6 +46,13 @@ namespace PinPon
             audioSource = GetComponent<AudioSource>();
 
             _cachedQueryStartInColliders = Physics2D.queriesStartInColliders;
+
+            if (_racquetObject != null)
+            {
+                _racquetObject.SetActive(false);
+                _racquetOriginalLocalPos = _racquetObject.transform.localPosition;
+                _racquetOriginalLocalScale = _racquetObject.transform.localScale;
+            }
         }
 
         private void Update()
@@ -49,6 +65,11 @@ namespace PinPon
                 HandleFallThrough();
             }
             
+            if (_frameInput.HitDown)
+            {
+                TryHit();
+            }
+            
             UpdateAnimator();
         }
 
@@ -59,7 +80,8 @@ namespace PinPon
                 JumpDown = Pin ? Input.GetButtonDown("Jump") : Input.GetButtonDown("Jump2"),
                 JumpHeld = Pin ? Input.GetButton("Jump") : Input.GetButton("Jump2"),
                 Move = new Vector2(Pin ? Input.GetAxis("Horizontal") : Input.GetAxis("Horizontal2"), 0),
-                FallDown = Pin ? Input.GetKeyDown(KeyCode.S) : Input.GetKeyDown(KeyCode.DownArrow)
+                FallDown = Pin ? Input.GetKeyDown(KeyCode.S) : Input.GetKeyDown(KeyCode.DownArrow),
+                HitDown = Pin ? Input.GetButtonDown("Fire1") : Input.GetButtonDown("Fire2")
             };
 
             if (_stats.SnapInput)
@@ -91,15 +113,7 @@ namespace PinPon
             _anim.SetFloat("HorizontalSpeed", _frameInput.Move.x);
             _anim.SetFloat("VerticalSpeed", _rb.velocity.y);
             _anim.SetBool("isMoving", _frameInput.Move.x != 0);
-
-            if (_frameInput.Move.x < 0)
-            {
-                _anim.SetBool("isFacingLeft", true);
-            }
-            else if (_frameInput.Move.x > 0)
-            {
-                _anim.SetBool("isFacingLeft", false);
-            }
+            _anim.SetBool("isFacingLeft", _isFacingLeft);
         }
 
         #region Collisions
@@ -110,15 +124,15 @@ namespace PinPon
         private void CheckCollisions()
         {
             Physics2D.queriesStartInColliders = false;
+            
+            LayerMask platformsLayerMask = LayerMask.GetMask("Platforms");
+            LayerMask ceilingCheckMask = ~((int)_stats.PlayerLayer | (int)platformsLayerMask);
 
-            // Ground and Ceiling
             bool groundHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.down, _stats.GrounderDistance, ~_stats.PlayerLayer);
-            bool ceilingHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.up, _stats.GrounderDistance, ~_stats.PlayerLayer);
+            bool ceilingHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.up, _stats.GrounderDistance, ceilingCheckMask);
 
-            // Hit a Ceiling
             if (ceilingHit) _frameVelocity.y = Mathf.Min(0, _frameVelocity.y);
 
-            // Landed on the Ground
             if (!_grounded && groundHit)
             {
                 _grounded = true;
@@ -127,7 +141,6 @@ namespace PinPon
                 _endedJumpEarly = false;
                 GroundedChanged?.Invoke(true, Mathf.Abs(_frameVelocity.y));
             }
-            // Left the Ground
             else if (_grounded && !groundHit)
             {
                 _grounded = false;
@@ -144,23 +157,16 @@ namespace PinPon
 
         private void HandleFallThrough()
         {
-            // Perform a raycast down to find the platform
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1f, (1 << LayerMask.NameToLayer("Default")));
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1f, ~_stats.PlayerLayer);
 
-            if (hit.collider != null && (hit.collider.CompareTag("tile") || hit.collider.CompareTag("base")))
+            if (hit.collider != null)
             {
-                StartCoroutine(DisableOnePlatform(hit.collider));
+                var platform = hit.collider.GetComponent<PlatformController>();
+                if (platform != null)
+                {
+                    platform.Drop();
+                }
             }
-        }
-
-        private IEnumerator DisableOnePlatform(Collider2D platformCollider)
-        {
-            Physics2D.IgnoreCollision(_col, platformCollider, true);
-            
-            // Wait until we are no longer overlapping the platform
-            yield return new WaitUntil(() => !_col.IsTouching(platformCollider));
-            
-            Physics2D.IgnoreCollision(_col, platformCollider, false);
         }
 
         #endregion
@@ -196,7 +202,6 @@ namespace PinPon
             _coyoteUsable = false;
             _frameVelocity.y = _stats.JumpPower;
             
-            // Play Sound
             audioSource.PlayOneShot(jumpSound);
             Jumped?.Invoke();
         }
@@ -207,7 +212,16 @@ namespace PinPon
 
         private void HandleDirection()
         {
-            if (_frameInput.Move.x ==.0f)
+            if (_frameInput.Move.x < 0)
+            {
+                _isFacingLeft = true;
+            }
+            else if (_frameInput.Move.x > 0)
+            {
+                _isFacingLeft = false;
+            }
+            
+            if (_frameInput.Move.x == 0f)
             {
                 var deceleration = _grounded ? _stats.GroundDeceleration : _stats.AirDeceleration;
                 _frameVelocity.x = Mathf.MoveTowards(_frameVelocity.x, 0, deceleration * Time.fixedDeltaTime);
@@ -237,6 +251,35 @@ namespace PinPon
         }
 
         #endregion
+        
+        #region Hitting
+
+        public void TryHit()
+        {
+            if (_racquetObject == null) return;
+            if (Time.time < _timeLastHit + _hitCooldown) return;
+            if (_racquetObject.activeInHierarchy) return;
+
+            _timeLastHit = Time.time;
+            
+            float facingMultiplier = _isFacingLeft ? -1f : 1f;
+
+            _racquetObject.transform.localPosition = new Vector3(
+                Mathf.Abs(_racquetOriginalLocalPos.x) * facingMultiplier,
+                _racquetOriginalLocalPos.y,
+                _racquetOriginalLocalPos.z
+            );
+
+            _racquetObject.transform.localScale = new Vector3(
+                Mathf.Abs(_racquetOriginalLocalScale.x) * facingMultiplier,
+                _racquetOriginalLocalScale.y,
+                _racquetOriginalLocalScale.z
+            );
+            
+            _racquetObject.SetActive(true);
+        }
+        
+        #endregion
 
         private void ApplyMovement() => _rb.velocity = _frameVelocity;
 
@@ -254,6 +297,7 @@ namespace PinPon
         public bool JumpHeld;
         public Vector2 Move;
         public bool FallDown;
+        public bool HitDown;
     }
 
     public interface IPlayerController

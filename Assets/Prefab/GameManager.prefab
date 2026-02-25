@@ -67,8 +67,6 @@ MonoBehaviour:
   seagullPonPrefab: {fileID: 2715440481775688260, guid: 646f233609d5a2d41aa4fd463c961f4d, type: 3}
   snowmanAnimator: {fileID: 0}
   snowman: {fileID: 0}
-  pin: {fileID: 0}
-  pon: {fileID: 0}
 --- !u!114 &6594260941738543384
 MonoBehaviour:
   m_ObjectHideFlags: 0
