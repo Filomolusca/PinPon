@@ -5,7 +5,6 @@ using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour
 {
-    public 
     // Start is called before the first frame update
     void Start()
     {
@@ -20,9 +19,7 @@ public class Menu : MonoBehaviour
     }
     public void StartGame()
     {
-        PlayerPrefs.SetInt("ScorePin", 0);
-        PlayerPrefs.SetInt("ScorePon", 0);
-        SceneManager.LoadScene("Game");
+        SceneManager.LoadScene("Lobby");
     }
     public void QuitGame()
     {

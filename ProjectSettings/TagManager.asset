@@ -17,6 +17,7 @@ TagManager:
   - seagullPin
   - seagullPon
   - spawnBall
+  - SpawnPoint
   layers:
   - Default
   - TransparentFX

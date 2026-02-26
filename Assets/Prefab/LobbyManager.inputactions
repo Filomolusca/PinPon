@@ -1,0 +1,65 @@
+{
+    "name": "LobbyManager",
+    "maps": [
+        {
+            "name": "Login",
+            "id": "9c0d0ae9-5620-40a4-8f91-321542892ec1",
+            "actions": [
+                {
+                    "name": "LoginPlayer",
+                    "type": "Button",
+                    "id": "8f2880ec-67e8-447f-be3e-4a7bf6fb0b28",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "BeginMatch",
+                    "type": "Button",
+                    "id": "6ff40278-b3af-4479-b6a4-802f380b1abe",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "d4e0e096-e447-4048-b38a-bd8f706d8c3d",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LoginPlayer",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7258a0a1-1796-449b-b520-d936de879475",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LoginPlayer",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7c6174d5-3783-444b-8b5f-11000e914ff7",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BeginMatch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

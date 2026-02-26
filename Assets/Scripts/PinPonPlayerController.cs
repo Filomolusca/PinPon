@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using UnityEngine.InputSystem;
 using UnityEngine;
 
 namespace PinPon
@@ -11,13 +12,10 @@ namespace PinPon
         private Rigidbody2D _rb;
         private CapsuleCollider2D _col;
         private Animator _anim;
-        private FrameInput _frameInput;
         private Vector2 _frameVelocity;
         private bool _cachedQueryStartInColliders;
-        
         private bool _isFacingLeft;
 
-        public bool Pin;
         public AudioClip jumpSound;
         private AudioSource audioSource;
         
@@ -30,7 +28,11 @@ namespace PinPon
 
         #region Interface
 
-        public Vector2 FrameInput => _frameInput.Move;
+        private Vector2 _moveInput;
+        private bool _jumpHeldInput;
+        private bool _fallDownInput;
+
+        public int PlayerIndex { get; private set; }
         public event Action<bool, float> GroundedChanged;
         public event Action Jumped;
 
@@ -44,6 +46,7 @@ namespace PinPon
             _col = GetComponent<CapsuleCollider2D>();
             _anim = GetComponent<Animator>();
             audioSource = GetComponent<AudioSource>();
+            PlayerIndex = GetComponent<PlayerInput>().playerIndex;
 
             _cachedQueryStartInColliders = Physics2D.queriesStartInColliders;
 
@@ -58,43 +61,54 @@ namespace PinPon
         private void Update()
         {
             _time += Time.deltaTime;
-            GatherInput();
-            
-            if (_frameInput.FallDown && _grounded)
+
+            if (_fallDownInput)
             {
-                HandleFallThrough();
+                if (_grounded) HandleFallThrough();
+                _fallDownInput = false; // Consome o input de um frame
             }
-            
-            if (_frameInput.HitDown)
-            {
-                TryHit();
-            }
-            
+
             UpdateAnimator();
         }
 
-        private void GatherInput()
+        #region Métodos de Callback de Input
+        public void OnMove(InputAction.CallbackContext context)
         {
-            _frameInput = new FrameInput
-            {
-                JumpDown = Pin ? Input.GetButtonDown("Jump") : Input.GetButtonDown("Jump2"),
-                JumpHeld = Pin ? Input.GetButton("Jump") : Input.GetButton("Jump2"),
-                Move = new Vector2(Pin ? Input.GetAxis("Horizontal") : Input.GetAxis("Horizontal2"), 0),
-                FallDown = Pin ? Input.GetKeyDown(KeyCode.S) : Input.GetKeyDown(KeyCode.DownArrow),
-                HitDown = Pin ? Input.GetButtonDown("Fire1") : Input.GetButtonDown("Fire2")
-            };
+            _moveInput = context.ReadValue<Vector2>();
+        }
 
-            if (_stats.SnapInput)
-            {
-                _frameInput.Move.x = Mathf.Abs(_frameInput.Move.x) < _stats.HorizontalDeadZoneThreshold ? 0 : Mathf.Sign(_frameInput.Move.x);
-            }
-
-            if (_frameInput.JumpDown)
+        public void OnJump(InputAction.CallbackContext context)
+        {
+            if (context.started)
             {
                 _jumpToConsume = true;
                 _timeJumpWasPressed = _time;
             }
+
+            if (context.canceled)
+            {
+                if (_rb.velocity.y > 0) _endedJumpEarly = true;
+            }
+
+            _jumpHeldInput = context.ReadValueAsButton();
         }
+
+        public void OnHit(InputAction.CallbackContext context)
+        {
+            if (context.started)
+            {
+                TryHit();
+            }
+        }
+
+        public void OnFallDown(InputAction.CallbackContext context)
+        {
+            if (context.started)
+            {
+                _fallDownInput = true;
+            }
+        }
+        #endregion
 
         private void FixedUpdate()
         {
@@ -110,9 +124,9 @@ namespace PinPon
         private void UpdateAnimator()
         {
             _anim.SetBool("isJumping", !_grounded);
-            _anim.SetFloat("HorizontalSpeed", _frameInput.Move.x);
+            _anim.SetFloat("HorizontalSpeed", _moveInput.x);
             _anim.SetFloat("VerticalSpeed", _rb.velocity.y);
-            _anim.SetBool("isMoving", _frameInput.Move.x != 0);
+            _anim.SetBool("isMoving", _moveInput.x != 0);
             _anim.SetBool("isFacingLeft", _isFacingLeft);
         }
 
@@ -185,7 +199,7 @@ namespace PinPon
 
         private void HandleJump()
         {
-            if (!_endedJumpEarly && !_grounded && !_frameInput.JumpHeld && _rb.velocity.y > 0) _endedJumpEarly = true;
+            if (!_endedJumpEarly && !_grounded && !_jumpHeldInput && _rb.velocity.y > 0) _endedJumpEarly = true;
 
             if (!_jumpToConsume && !HasBufferedJump) return;
 
@@ -212,23 +226,23 @@ namespace PinPon
 
         private void HandleDirection()
         {
-            if (_frameInput.Move.x < 0)
+            if (_moveInput.x < 0)
             {
                 _isFacingLeft = true;
             }
-            else if (_frameInput.Move.x > 0)
+            else if (_moveInput.x > 0)
             {
                 _isFacingLeft = false;
             }
             
-            if (_frameInput.Move.x == 0f)
+            if (_moveInput.x == 0f)
             {
                 var deceleration = _grounded ? _stats.GroundDeceleration : _stats.AirDeceleration;
                 _frameVelocity.x = Mathf.MoveTowards(_frameVelocity.x, 0, deceleration * Time.fixedDeltaTime);
             }
             else
             {
-                _frameVelocity.x = Mathf.MoveTowards(_frameVelocity.x, _frameInput.Move.x * _stats.MaxSpeed, _stats.Acceleration * Time.fixedDeltaTime);
+                _frameVelocity.x = Mathf.MoveTowards(_frameVelocity.x, _moveInput.x * _stats.MaxSpeed, _stats.Acceleration * Time.fixedDeltaTime);
             }
         }
 
@@ -291,20 +305,10 @@ namespace PinPon
 #endif
     }
 
-    public struct FrameInput
-    {
-        public bool JumpDown;
-        public bool JumpHeld;
-        public Vector2 Move;
-        public bool FallDown;
-        public bool HitDown;
-    }
-
     public interface IPlayerController
     {
         public event Action<bool, float> GroundedChanged;
 
         public event Action Jumped;
-        public Vector2 FrameInput { get; }
     }
 }
