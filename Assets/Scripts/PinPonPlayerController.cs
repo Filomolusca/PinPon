@@ -35,6 +35,7 @@ namespace PinPon
         public int PlayerIndex { get; private set; }
         public event Action<bool, float> GroundedChanged;
         public event Action Jumped;
+        public iceberg assignedIceberg;
 
         #endregion
 

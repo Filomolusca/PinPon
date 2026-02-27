@@ -1,183 +1,138 @@
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
-using UnityEngine.UIElements;
 using System.Collections;
 
 public class ball_movement : MonoBehaviour
 {
-    public float initialSpeed;
-    public float speed; // Velocidade inicial da bola
-    public float speedIncrement;
-    public float speedDecrement; 
+    [Header("Movimento")]
+    public float initialSpeed = 8f;
+    public float speed;
+    public float speedIncrement = 0.5f;
+
+    [Header("Referências")]
     public Rigidbody2D rb;
-    public iceberg iceberg;
-    public GameObject Pin;
-    public GameObject Pon;
-    public GameManager gameManager;
-    public Score score;
+    public GameManager gameManager; // Injetado pelo criador (Snowman ou GameManager)
+    public Score score; // Injetado pelo criador
+    public Transform spawnPoint; // Injetado pelo criador
+
+    [Header("Efeitos")]
     private AudioSource audioSource;
     public AudioClip SnowballHit;
     public AudioClip IcebergCrack;
-    public Transform spawnPoint;
     private SpriteRenderer spriteRenderer;
-    // private float lastCollisionTime = 0f;
-    // private float collisionCooldown = 0.1f;
-
 
     void Start()
-    {  
-        // spawnPoint = GameObject.FindGameObjectWithTag("spawnPoint").transform;
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.enabled = false;
-        rb = GetComponent<Rigidbody2D>();
-        gameManager = FindObjectOfType<GameManager>();
-        audioSource = GetComponent<AudioSource>();          
-        Launch();
-        score = FindObjectOfType<Score>();
-        iceberg = FindObjectOfType<iceberg>();
-        Pin = GameObject.FindGameObjectWithTag("pin");
-        Pon = GameObject.FindGameObjectWithTag("pon");
-
-    }
-    void Update()
     {
-
+        // Inicializa componentes locais
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        rb = GetComponent<Rigidbody2D>();
+        audioSource = GetComponent<AudioSource>();
+        
+        // As referências externas (gameManager, score, spawnPoint)
+        // devem ser injetadas antes do Start() ser chamado.
+        // Se a bola for a original na cena, ela lança a si mesma.
+        if (gameObject.CompareTag("bolaOriginal"))
+        {
+             spriteRenderer.enabled = false; // Começa invisível
+             Launch();
+        }
     }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         bool validHit = false;
-
-        // 1. Did the ball collide with an active racquet?
-        if (collision.gameObject.GetComponent<RacquetController>() != null)
+        if (collision.gameObject.GetComponent<RacquetController>() != null || collision.gameObject.GetComponent<BouncesAndSpeedsUpBall>() != null)
         {
-            validHit = true; // Yes, it's a valid hit.
-        }
-        // 2. If not a racquet, was it an object that speeds up the ball?
-        else if (collision.gameObject.GetComponent<BouncesAndSpeedsUpBall>() != null)
-        {
-            validHit = true; // Yes, a special object.
+            validHit = true;
         }
 
-        // 3. Apply hit effect and sound
         if (validHit)
         {
             IncreaseSpeed();
-            audioSource.PlayOneShot(SnowballHit);
+            if(SnowballHit != null) audioSource.PlayOneShot(SnowballHit);
         }
-        else if (collision.gameObject.CompareTag("Untagged")) // Play sound on walls, etc.
+        else if (collision.gameObject.CompareTag("Untagged"))
         {
-             audioSource.PlayOneShot(SnowballHit);
+            if(SnowballHit != null) audioSource.PlayOneShot(SnowballHit);
         }
-
-        // Keep the randomness in the angle anyway (if desired)
+        
+        // Lógica de pontuação com GetComponentInParent
+        if (collision.gameObject.CompareTag("pontos") || collision.gameObject.CompareTag("pontos2"))
+        {
+            iceberg hitIceberg = collision.gameObject.GetComponentInParent<iceberg>();
+            if (hitIceberg != null)
+            {
+                if(IcebergCrack != null) audioSource.PlayOneShot(IcebergCrack);
+                hitIceberg.Stages--; 
+                Restart(); 
+            }
+        }
+        
         Vector2 direction = rb.velocity.normalized;
         direction.x += Random.Range(-0.1f, 0.1f);
         direction.y += Random.Range(-0.1f, 0.1f);
-        if(direction != Vector2.zero) rb.velocity = direction.normalized * speed;
-
-        // 4. SCORING Logic (CORRECTED to use the original logic)
-        if (collision.gameObject.CompareTag("pontos"))
-        {
-            audioSource.PlayOneShot(IcebergCrack);
-            GameObject pinObject = GameObject.FindWithTag("pin");
-            if (pinObject != null)
-            {
-                iceberg pinIceberg = pinObject.GetComponent<iceberg>();
-                if (pinIceberg != null)
-                {
-                    pinIceberg.Stages--;
-                    Restart();
-                }
-            }
-        }
-        else if (collision.gameObject.CompareTag("pontos2"))
-        {
-            audioSource.PlayOneShot(IcebergCrack);
-            GameObject ponObject = GameObject.FindWithTag("pon");
-            if (ponObject != null)
-            {
-                iceberg ponIceberg = ponObject.GetComponent<iceberg>();
-                if (ponIceberg != null)
-                {
-                    ponIceberg.Stages--;
-                    Restart();
-                }
-            }
-        }
+        if (direction != Vector2.zero) rb.velocity = direction.normalized * speed;
     }
+
     public void Launch()
-{
-    StartCoroutine(LaunchWithDelay());
-}
+    {
+        StartCoroutine(LaunchWithDelay());
+    }
 
-private IEnumerator LaunchWithDelay()
-{
-    // Espera 1 segundo
-    yield return new WaitForSeconds(1f);
+    private IEnumerator LaunchWithDelay()
+    {
+        yield return new WaitForSeconds(1f);
+        
+        if (spawnPoint == null)
+        {
+            Debug.LogError("Cannot launch ball, spawn point is not set!", this.gameObject);
+            yield break;
+        }
 
+        spriteRenderer.enabled = true;
+        transform.position = spawnPoint.position;
 
-    spriteRenderer.enabled = true;
+        float x = Random.Range(0, 2) == 0 ? -1 : 1;
+        float y = Random.Range(-0.1f, 0.4f);
 
-    Debug.Log("bola lançada");
-    transform.position = spawnPoint.position;
-
-    // Define a direção inicial da bola aleatoriamente
-    float x = Random.Range(0, 2) == 0 ? -1 : 1;
-    float y = Random.Range(0, 2) == 0 ? 0 : 1;
-
-    x += Random.Range(-0.4f, 0.4f);
-    y += Random.Range(0.1f, 0.4f);
-
-    // Normaliza a direção para manter a velocidade constante
-    Vector2 direction = new Vector2(x, y).normalized;
-
-    // Define a velocidade inicial
-    rb.velocity = direction * speed;
-}
+        Vector2 direction = new Vector2(x, y).normalized;
+        rb.velocity = direction * speed;
+    }
 
     private void IncreaseSpeed()
     {
-        if (score.ballCounterValue >= 3)
-        {
-            return;
-        }
-        Debug.Log("Speed: " + speed);
+        if (score != null && score.ballCounterValue >= 3) return;
+        
         speed += speedIncrement;
-        score.ballCounterValue += 0.1f;
-
+        if(score != null) score.ballCounterValue += 0.1f;
         rb.velocity = rb.velocity.normalized * speed;
     }
 
-
     public void Restart()
     {
-        Debug.Log("bola entrou no restart");
         speed = initialSpeed;
         rb.velocity = Vector2.zero;
-        score.ballCounterValue = 1;
-        DestroyExcessBalls();
+        if(score != null) score.ballCounterValue = 1;
         
         if (gameObject.CompareTag("bolaOriginal"))
         {
+            DestroyExcessBalls(); // Só a bola original pode destruir as outras
             spriteRenderer.enabled = false;
-            gameManager.RestartGame();
-            // Time.timeScale = 0f;
+            if(gameManager != null) gameManager.RestartGame();
             Launch();
         }
-
+        else
+        {
+            Destroy(gameObject); // Bolas extras se destroem ao invés de reiniciar o jogo
+        }
     }
+
     public void DestroyExcessBalls()
     {
-        GameObject originalBall = GameObject.FindGameObjectWithTag("bolaOriginal");
         GameObject[] allBalls = GameObject.FindGameObjectsWithTag("bola");
-
         foreach (GameObject ball in allBalls)
         {
-            if (ball != originalBall)
-            {
-                Destroy(ball);
-                Debug.Log("Bola extra destruída: " + ball.name);;
-            }
+            // A bola original nunca tem a tag "bola", então não se destruirá.
+            Destroy(ball);
         }
     }
 }

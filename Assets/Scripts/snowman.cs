@@ -1,86 +1,96 @@
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class snowman : MonoBehaviour
 {
-    public int HP; 
-    public int initialHP;
-    public int maxBalls;
-    private int currentBalls;
+    [Header("Configuração")]
+    public int initialHP = 3; 
+    public int maxBalls = 2; // Máximo de bolas extras em cena
     public GameObject ballPrefab; 
-    public GameObject originalBall;
     public Transform spawnPoint; 
-    public bool hasCollided = false;
+    
+    [Header("Referências")]
+    public GameManager gameManager; // Arraste o GameManager da cena aqui
+    public Score score; // Arraste o Score da cena aqui
+    public GameObject originalBall; // Arraste a bola original da cena aqui
+
+    [Header("Efeitos")]
     public Animator animator;
     public AudioSource audioSource;
     public AudioClip snowmanHit; 
     public AudioClip snowmanThrowBall; 
+
+    private int hp; 
+    private int currentBalls;
+    private bool hasCollided = false;
+
     void Start()
     {
-        HP = initialHP;
-
+        hp = initialHP;
+        if(animator == null) animator = GetComponent<Animator>();
+        if(audioSource == null) audioSource = GetComponent<AudioSource>();
     }
+
     void Update()
     {
-        animator.SetInteger("HP", HP);
+        animator.SetInteger("HP", hp);
         animator.SetBool("hasCollided", hasCollided);
-        if (HP <= 0)
+
+        if (hp <= 0)
         {
-            // animator.SetBool("Throw", true);
             animator.Play("Snowman_Throw_Ball");
-            Debug.Log("Snowman is dead");
             SpawnNewBall();
-            HP = initialHP;
+            hp = initialHP; // Reseta a vida após jogar a bola
         }
     }
+
     public void RestartSnowman()
-{
-    HP = initialHP;
-    hasCollided = false;
-    // animator.SetBool("Throw", false);
-    animator.Play("Snowman_Throw_Ball");
-    audioSource.PlayOneShot(snowmanThrowBall);
-}
+    {
+        hp = initialHP;
+        hasCollided = false;
+        animator.Play("Snowman_Throw_Ball");
+        if(snowmanThrowBall != null) audioSource.PlayOneShot(snowmanThrowBall);
+    }
 
     private void SpawnNewBall()
     {
-        if (currentBalls >= maxBalls)
+        if (currentBalls >= maxBalls) return;
+        
+        if (originalBall != null && originalBall.TryGetComponent(out ball_movement originalBallScript))
         {
-            Debug.Log("Max balls reached");
-            return;
-        }
-        if (originalBall != null)
-        {
-            // Obtém a velocidade da bola original
-            float originalSpeed = originalBall.GetComponent<ball_movement>().speed;
+            GameObject newBallGO = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation);
+            ball_movement newBallScript = newBallGO.GetComponent<ball_movement>();
 
-            // Cria uma nova instância do prefab da bola no ponto de spawn
-            GameObject newBall = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation);
+            // Injeção de Dependência!
+            newBallScript.gameManager = this.gameManager;
+            newBallScript.score = this.score;
+            newBallScript.spawnPoint = this.spawnPoint;
 
-            // Define a velocidade da nova bola para a mesma velocidade da bola original
-            newBall.GetComponent<ball_movement>().speed = originalSpeed;
-
-            // Lança a nova bola
-            newBall.GetComponent<ball_movement>().Launch();
+            // Configura e lança a nova bola
+            newBallScript.speed = originalBallScript.speed;
+            newBallScript.initialSpeed = originalBallScript.initialSpeed;
+            newBallScript.speedIncrement = originalBallScript.speedIncrement;
+            newBallScript.Launch();
+            
             currentBalls++;
-            Debug.Log("New ball spawned");
+            Debug.Log("Nova bola instanciada pelo Snowman.");
 
             animator.SetBool("Throw", false);
         }
     }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!hasCollided && (collision.gameObject.CompareTag("bolaOriginal") || collision.gameObject.CompareTag("bola")))
         {
-            audioSource.PlayOneShot(snowmanHit);
-            HP--;
+            if(snowmanHit != null) audioSource.PlayOneShot(snowmanHit);
+            hp--;
             hasCollided = true; 
             StartCoroutine(ResetCollision()); 
         }
     }
-        private IEnumerator ResetCollision()
+
+    private IEnumerator ResetCollision()
     {
         yield return new WaitForSeconds(0.5f); 
         hasCollided = false; 

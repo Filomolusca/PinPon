@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 1962780639055529264}
   - component: {fileID: 4528133672395488269}
   - component: {fileID: 6578377110480107024}
-  - component: {fileID: 3127694500812754699}
   - component: {fileID: 342403812842695264}
   - component: {fileID: 8049145410944976628}
   - component: {fileID: 3468185047024992690}
@@ -119,30 +118,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &3127694500812754699
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3485958794479129433}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aec7cfee7795b3f4c998e24d92d7a506, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Stages: 4
-  MoveDistance: 1.5
-  stage1: {fileID: 0}
-  stage2: {fileID: 0}
-  stage3: {fileID: 0}
-  stage4: {fileID: 0}
-  goal: {fileID: 0}
-  gameManager: {fileID: 0}
-  pin: {fileID: 3237154637169289868}
-  score: {fileID: 0}
-  pointSound: {fileID: 8300000, guid: 52a2afc1dc3adfb4fb355929a0e31548, type: 3}
-  icebergDestroySound: {fileID: 8300000, guid: 804226a8032197846b65ced5b2e6d15e, type: 3}
 --- !u!82 &342403812842695264
 AudioSource:
   m_ObjectHideFlags: 0
@@ -308,10 +283,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _stats: {fileID: 11400000, guid: 05e6a06c5af93134ab98ff12e2c27265, type: 2}
-  Pin: 1
   jumpSound: {fileID: 8300000, guid: 2a29f70793d4db246b186011539a5c13, type: 3}
   _racquetObject: {fileID: 5896620449253616813}
   _hitCooldown: 0.5
+  assignedIceberg: {fileID: 0}
 --- !u!114 &-1485026880986184313
 MonoBehaviour:
   m_ObjectHideFlags: 0

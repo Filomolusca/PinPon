@@ -130,14 +130,13 @@ GameObject:
   - component: {fileID: 2283811272439253883}
   - component: {fileID: 8442524359767533588}
   - component: {fileID: 3312228330338745672}
-  - component: {fileID: 3721555060951583901}
   - component: {fileID: 6000528937647378847}
   - component: {fileID: 5702300814454144637}
   - component: {fileID: 944549605990710921}
   - component: {fileID: 2046209001573739356}
   - component: {fileID: -8119867887048084184}
   m_Layer: 9
-  m_Name: 'PonPix '
+  m_Name: Pon
   m_TagString: pon
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -238,30 +237,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &3721555060951583901
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6662034118097835137}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aec7cfee7795b3f4c998e24d92d7a506, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Stages: 4
-  MoveDistance: 1.5
-  stage1: {fileID: 0}
-  stage2: {fileID: 0}
-  stage3: {fileID: 0}
-  stage4: {fileID: 0}
-  goal: {fileID: 0}
-  gameManager: {fileID: 0}
-  pin: {fileID: 2046209001573739356}
-  score: {fileID: 0}
-  pointSound: {fileID: 8300000, guid: 52a2afc1dc3adfb4fb355929a0e31548, type: 3}
-  icebergDestroySound: {fileID: 8300000, guid: 804226a8032197846b65ced5b2e6d15e, type: 3}
 --- !u!82 &6000528937647378847
 AudioSource:
   m_ObjectHideFlags: 0
@@ -427,10 +402,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _stats: {fileID: 11400000, guid: 05e6a06c5af93134ab98ff12e2c27265, type: 2}
-  Pin: 0
   jumpSound: {fileID: 8300000, guid: 2a29f70793d4db246b186011539a5c13, type: 3}
   _racquetObject: {fileID: 5569416320393545044}
   _hitCooldown: 0.5
+  assignedIceberg: {fileID: 0}
 --- !u!114 &-8119867887048084184
 MonoBehaviour:
   m_ObjectHideFlags: 0
