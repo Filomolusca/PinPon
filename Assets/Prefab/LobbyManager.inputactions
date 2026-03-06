@@ -50,7 +50,18 @@
                 {
                     "name": "",
                     "id": "7c6174d5-3783-444b-8b5f-11000e914ff7",
-                    "path": "",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BeginMatch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "abab47ac-1281-48a7-9f42-d6bad3945f14",
+                    "path": "<Keyboard>/space",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

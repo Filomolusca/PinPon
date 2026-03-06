@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1219164048378036988
 Transform:
   m_ObjectHideFlags: 0
@@ -96,9 +96,9 @@ SpriteRenderer:
   m_SortingLayerID: 1144109331
   m_SortingLayer: 3
   m_SortingOrder: 2
-  m_Sprite: {fileID: -2107390376, guid: cae70324290329d48bf7cbe30fed3c8d, type: 3}
+  m_Sprite: {fileID: 193748769, guid: 1d6006c650e6aef4e99df5d40365cb7b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 0.28125, y: 0.40625}
@@ -151,7 +151,7 @@ Transform:
   m_GameObject: {fileID: 6662034118097835137}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0050001144, y: 0.0075001717, z: 0}
+  m_LocalPosition: {x: 6.33, y: -4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -405,7 +405,7 @@ MonoBehaviour:
   jumpSound: {fileID: 8300000, guid: 2a29f70793d4db246b186011539a5c13, type: 3}
   _racquetObject: {fileID: 5569416320393545044}
   _hitCooldown: 0.5
-  assignedIceberg: {fileID: 0}
+  assignedIceberg: {fileID: 7652276841753296987, guid: 9d52a8fd12136c44bb5763e314ca3132, type: 3}
 --- !u!114 &-8119867887048084184
 MonoBehaviour:
   m_ObjectHideFlags: 0

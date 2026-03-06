@@ -32,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 3485958794479129433}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.33, y: -2.29, z: 0}
+  m_LocalPosition: {x: -6.33, y: -4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -286,7 +286,7 @@ MonoBehaviour:
   jumpSound: {fileID: 8300000, guid: 2a29f70793d4db246b186011539a5c13, type: 3}
   _racquetObject: {fileID: 5896620449253616813}
   _hitCooldown: 0.5
-  assignedIceberg: {fileID: 0}
+  assignedIceberg: {fileID: -8124270933684972993, guid: 3c89bb14f2b697b4b8529beb9601a59d, type: 3}
 --- !u!114 &-1485026880986184313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,7 +399,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6647915257101913402
 Transform:
   m_ObjectHideFlags: 0

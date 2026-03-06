@@ -48,24 +48,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0263fc84dc40ae049abd499abf39c33f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pinPrefab: {fileID: 3485958794479129433, guid: eff1884e01b0fe24890e4a07bfd471fc, type: 3}
+  ponPrefab: {fileID: 6662034118097835137, guid: f0e41467bf52e074b8d0585cb8fa1196, type: 3}
+  icebergPinPrefab: {fileID: 6259996152707677716, guid: 3c89bb14f2b697b4b8529beb9601a59d, type: 3}
+  icebergPonPrefab: {fileID: 367241935729439251, guid: 9d52a8fd12136c44bb5763e314ca3132, type: 3}
+  player1SpawnPoint: {fileID: 1962780639055529264, guid: eff1884e01b0fe24890e4a07bfd471fc, type: 3}
+  iceberg1SpawnPoint: {fileID: 2659062060241115503, guid: 3c89bb14f2b697b4b8529beb9601a59d, type: 3}
+  player2SpawnPoint: {fileID: 2283811272439253883, guid: f0e41467bf52e074b8d0585cb8fa1196, type: 3}
+  iceberg2SpawnPoint: {fileID: 9047781391550125487, guid: 9d52a8fd12136c44bb5763e314ca3132, type: 3}
   pauseMenu: {fileID: 0}
   victoryScreen: {fileID: 0}
   RoundScreen: {fileID: 0}
-  ballCounter: {fileID: 0}
   score: {fileID: 6594260941738543384}
-  actors:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 4810671198782884150, guid: 8bbfc450bbc8ff540b6eee547ec35146, type: 3}
-  icebergManager: {fileID: 0}
   ostMatch: {fileID: 8197081845477830394}
-  spawnPoint: {fileID: 0}
   spawnSeagullPin: {fileID: 0}
   spawnSeagullPon: {fileID: 0}
   seagullPinPrefab: {fileID: 595074872767637426, guid: e40bf04ce24806b41a29a58d2a4a7e08, type: 3}
   seagullPonPrefab: {fileID: 2715440481775688260, guid: 646f233609d5a2d41aa4fd463c961f4d, type: 3}
-  snowmanAnimator: {fileID: 0}
   snowman: {fileID: 0}
 --- !u!114 &6594260941738543384
 MonoBehaviour:

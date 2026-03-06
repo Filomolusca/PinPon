@@ -20,13 +20,16 @@ public class ball_movement : MonoBehaviour
     public AudioClip IcebergCrack;
     private SpriteRenderer spriteRenderer;
 
-    void Start()
+    void Awake()
     {
-        // Inicializa componentes locais
+        // Inicializa componentes locais no Awake para garantir que estejam prontos.
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         audioSource = GetComponent<AudioSource>();
-        
+    }
+
+    void Start()
+    {
         // As referências externas (gameManager, score, spawnPoint)
         // devem ser injetadas antes do Start() ser chamado.
         // Se a bola for a original na cena, ela lança a si mesma.
@@ -63,7 +66,8 @@ public class ball_movement : MonoBehaviour
             {
                 if(IcebergCrack != null) audioSource.PlayOneShot(IcebergCrack);
                 hitIceberg.Stages--; 
-                Restart(); 
+                Restart();
+
             }
         }
         
@@ -80,7 +84,25 @@ public class ball_movement : MonoBehaviour
 
     private IEnumerator LaunchWithDelay()
     {
-        yield return new WaitForSeconds(1f);
+        Debug.Log("Lançando bola...");
+        transform.position = spawnPoint.position;
+        rb.velocity = Vector2.zero;
+        spriteRenderer.enabled = false;
+
+        yield return new WaitForSeconds(1f); // Pequena pausa antes de lançar a bola
+
+        if (this.gameObject.CompareTag("bolaOriginal"))
+        { 
+            speed = initialSpeed;
+        }
+        
+        // Para bolas extras, a velocidade é definida pelo Snowman.
+        // Como um failsafe, se a velocidade for 0, usamos a inicial.
+        if (speed <= 0)
+        {
+            Debug.LogWarning($"Velocidade da bola era {speed}. Usando a velocidade inicial como fallback.");
+            speed = initialSpeed;
+        }
         
         if (spawnPoint == null)
         {
@@ -89,7 +111,7 @@ public class ball_movement : MonoBehaviour
         }
 
         spriteRenderer.enabled = true;
-        transform.position = spawnPoint.position;
+
 
         float x = Random.Range(0, 2) == 0 ? -1 : 1;
         float y = Random.Range(-0.1f, 0.4f);
@@ -109,7 +131,7 @@ public class ball_movement : MonoBehaviour
 
     public void Restart()
     {
-        speed = initialSpeed;
+        speed = 0;
         rb.velocity = Vector2.zero;
         if(score != null) score.ballCounterValue = 1;
         

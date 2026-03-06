@@ -46,6 +46,7 @@ public class snowman : MonoBehaviour
 
     public void RestartSnowman()
     {
+        currentBalls = 0;
         hp = initialHP;
         hasCollided = false;
         animator.Play("Snowman_Throw_Ball");
@@ -66,10 +67,9 @@ public class snowman : MonoBehaviour
             newBallScript.score = this.score;
             newBallScript.spawnPoint = this.spawnPoint;
 
-            // Configura e lança a nova bola
+            // Define a velocidade da nova bola explicitamente, usando a da bola original.
             newBallScript.speed = originalBallScript.speed;
-            newBallScript.initialSpeed = originalBallScript.initialSpeed;
-            newBallScript.speedIncrement = originalBallScript.speedIncrement;
+            
             newBallScript.Launch();
             
             currentBalls++;

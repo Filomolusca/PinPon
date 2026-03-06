@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
     private bool isPaused = false;
     private List<GameObject> activePlayers = new List<GameObject>();
     private List<Vector2> initialPositions = new List<Vector2>();
+    private List<GameObject> spawnedIcebergs = new List<GameObject>();
     private static bool isFirstRound = true;
 
     void Start()
@@ -76,7 +77,6 @@ public class GameManager : MonoBehaviour
             Transform playerSpawn;
             Transform icebergSpawn;
 
-            // Determina quais prefabs e spawn points usar baseado no PlayerIndex
             if (config.PlayerIndex == 0)
             {
                 playerPrefab = pinPrefab;
@@ -93,40 +93,49 @@ public class GameManager : MonoBehaviour
             }
 
             // --- Instanciação e Conexão ---
-            
-            // 1. Instanciar Iceberg
             GameObject icebergGO = Instantiate(icebergPrefab, icebergSpawn.position, icebergSpawn.rotation);
+            spawnedIcebergs.Add(icebergGO);    
             iceberg currentIceberg = icebergGO.GetComponent<iceberg>();
 
-            // 2. Instanciar Jogador, garantindo que o dispositivo de entrada correto seja usado
-            PlayerInput newPlayer = PlayerInput.Instantiate(
-                prefab: playerPrefab,
-                playerIndex: config.PlayerIndex,
-                controlScheme: config.Input.currentControlScheme,
-                splitScreenIndex: -1,
-                pairWithDevice: config.Input.devices[0]
-            );
-            newPlayer.gameObject.transform.position = playerSpawn.position;
-            PinPonPlayerController playerController = newPlayer.gameObject.GetComponent<PinPonPlayerController>();
+            PinPonPlayerController playerController;
 
-            // 3. Conectar as referências entre eles
+            // Se o jogador já foi instanciado antes (em uma rodada anterior), apenas o reposicionamos.
+            if (config.PlayerInstance != null)
+            {
+                Debug.Log($"Jogador {config.PlayerIndex} já existe. Reposicionando.");
+                config.PlayerInstance.transform.position = playerSpawn.position;
+                playerController = config.PlayerInstance.GetComponent<PinPonPlayerController>();
+            }
+            // Se for a primeira vez, instanciamos o jogador.
+            else
+            {
+                Debug.Log($"Instanciando novo jogador para o índice {config.PlayerIndex}.");
+                PlayerInput newPlayer = PlayerInput.Instantiate(
+                    prefab: playerPrefab,
+                    playerIndex: config.PlayerIndex,
+                    controlScheme: config.Input.currentControlScheme,
+                    splitScreenIndex: -1,
+                    pairWithDevice: config.Input.devices[0]
+                );
+                newPlayer.gameObject.transform.position = playerSpawn.position;
+                playerController = newPlayer.gameObject.GetComponent<PinPonPlayerController>();
+                
+                // Armazena a instância no objeto de configuração para que não seja criada novamente
+                config.PlayerInstance = newPlayer.gameObject;
+            }
+
+            // Conecta as referências entre o jogador (novo ou existente) e o novo iceberg.
             if (playerController != null && currentIceberg != null)
             {
                 currentIceberg.AssignPlayer(playerController, this, score);
                 playerController.assignedIceberg = currentIceberg;
                 
-                activePlayers.Add(newPlayer.gameObject);
+                activePlayers.Add(playerController.gameObject);
                 initialPositions.Add(playerSpawn.position);
                 
                 Debug.Log($"Jogador {playerController.PlayerIndex} ({playerPrefab.name}) e seu iceberg ({icebergPrefab.name}) foram configurados.");
             }
-
-            // 4. Destruir o GameObject "marcador" que veio do lobby
-            Destroy(config.Input.gameObject);
         }
-
-        // Limpa a lista de configurações pois os jogadores já foram criados
-        playerConfigs.Clear();
     }
 
     public void BeginMatch()
@@ -165,33 +174,101 @@ public class GameManager : MonoBehaviour
         RoundScreen.SetActive(false);
     }
 
-    public void RestartGame()
-    {
-        if(snowman != null && snowman.TryGetComponent(out Animator anim))
-        {
-            anim.SetBool("Throw", true);
-        }
+    // public void RestartGame()
+    // {
+    //     if(snowman != null && snowman.TryGetComponent(out Animator anim))
+    //     {
+    //         anim.SetBool("Throw", true);
+    //     }
         
-        for (int i = 0; i < activePlayers.Count; i++)
+    //     for (int i = 0; i < activePlayers.Count; i++)
+    //     {
+    //         if(activePlayers[i] != null)
+    //         {
+    //             activePlayers[i].transform.position = initialPositions[i];
+    //         }
+    //     }
+    //     Time.timeScale = 1f;
+    //     if(snowman != null) snowman.RestartSnowman();
+    // }
+    public void RestartGame()
+{
+    // Reposiciona os jogadores para suas posições iniciais
+    for (int i = 0; i < activePlayers.Count; i++)
+    {
+        if(activePlayers[i] != null)
         {
-            if(activePlayers[i] != null)
-            {
-                activePlayers[i].transform.position = initialPositions[i];
-            }
+            activePlayers[i].transform.position = initialPositions[i];
         }
-        Time.timeScale = 1f;
-        if(snowman != null) snowman.RestartSnowman();
     }
     
-    public void ScorePoint()
-    {
-        Debug.Log("ScorePoint! Scene Reload!");
-        PlayerPrefs.SetInt("ScorePin", score.ScorePin);
-        PlayerPrefs.SetInt("ScorePon", score.ScorePon);
-        
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);    
-    }
+    Time.timeScale = 1f;
 
+    // Reseta o snowman para ele poder lançar a bola de novo
+    if(snowman != null) 
+    {
+        snowman.RestartSnowman();
+    }
+}
+    
+    // public void ScorePoint()
+    // {
+    //     Debug.Log("ScorePoint! Scene Reload!");
+    //     PlayerPrefs.SetInt("ScorePin", score.ScorePin);
+    //     PlayerPrefs.SetInt("ScorePon", score.ScorePon);
+        
+    //     SceneManager.LoadScene(SceneManager.GetActiveScene().name);    
+    // }
+    public void ScorePoint()
+{
+    Debug.Log("ScorePoint! Resetting round.");
+    PlayerPrefs.SetInt("ScorePin", score.ScorePin);
+    PlayerPrefs.SetInt("ScorePon", score.ScorePon);
+
+    // Verifica se alguém ganhou o jogo
+    if (score.ScorePin >= 3 || score.ScorePon >= 3) // Supondo que 3 pontos vencem
+    {
+        GameOver();
+    }
+    else
+    {
+        ResetRound();
+    }
+}
+
+public void ResetRound()
+{
+    // 1. Destrói os icebergs da rodada anterior
+    foreach (var iceberg in spawnedIcebergs)
+    {
+        if (iceberg != null)
+        {
+            Destroy(iceberg);
+        }
+    }
+    spawnedIcebergs.Clear();
+
+
+
+    // 2. Destrói a bola (ou bolas) em jogo
+    // var balls = GameObject.FindGameObjectsWithTag("bola"); // Certifique-se que sua bola tem a tag "Ball"
+    // if(balls != null)
+    // {
+    //     foreach (var ball in balls)
+    //     {
+    //         Destroy(ball);
+    //     }
+    // }
+    
+    // 3. Recria os icebergs e reposiciona os jogadores
+    // Como a cena não foi recarregada, a referência a 'config.PlayerInstance' ainda é válida.
+    SpawnAndSetupPlayers();
+    ResetSeagulls();
+    // 4. Reinicia os outros elementos e começa a próxima rodada
+    RestartGame(); // Este seu método já reposiciona os players e o snowman
+    BeginMatch();  // Este seu método já mostra a tela "Round" e espera o jogador
+}
+    
     #region Métodos de Gerenciamento de Jogo (Pause, Game Over, etc.)
     void Update()
     {
@@ -262,6 +339,24 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+    public void ResetSeagulls()
+    {
+        // Encontra todas as gaivotas ativas na cena e as destrói
+        var seagulls = GameObject.FindGameObjectsWithTag("seagullPin");
+        foreach (var seagull in seagulls)
+        {
+            Destroy(seagull);
+        }
+        var seagullsPon = GameObject.FindGameObjectsWithTag("seagullPon");
+        foreach (var seagull in seagullsPon)
+        {
+            Destroy(seagull);
+        }
+
+        // Reinstancia as gaivotas para a nova rodada
+        Instantiate(seagullPinPrefab, spawnSeagullPin.position, spawnSeagullPin.rotation);
+        Instantiate(seagullPonPrefab, spawnSeagullPon.position, spawnSeagullPon.rotation);
+     }
     #endregion
 }
 
