@@ -22,9 +22,14 @@ namespace PinPon
         [Header("Hitting")]
         [SerializeField] private GameObject _racquetObject;
         [SerializeField] private float _hitCooldown = 0.5f;
+        [SerializeField] private float _hitZoneTime = 0.5f;
+        [SerializeField] private GameObject _hitZoneObject;
         private float _timeLastHit = float.MinValue;
         private Vector3 _racquetOriginalLocalPos;
         private Vector3 _racquetOriginalLocalScale;
+        private Vector3 _hitZoneOriginalLocalPos;
+        private Vector3 _hitZoneOriginalLocalScale;
+
 
         #region Interface
 
@@ -56,6 +61,13 @@ namespace PinPon
                 _racquetObject.SetActive(false);
                 _racquetOriginalLocalPos = _racquetObject.transform.localPosition;
                 _racquetOriginalLocalScale = _racquetObject.transform.localScale;
+            }
+
+            if (_hitZoneObject != null)
+            {
+                _hitZoneObject.SetActive(false);
+                _hitZoneOriginalLocalPos = _hitZoneObject.transform.localPosition;
+                _hitZoneOriginalLocalScale = _hitZoneObject.transform.localScale;
             }
         }
 
@@ -144,9 +156,9 @@ namespace PinPon
             LayerMask ceilingCheckMask = ~((int)_stats.PlayerLayer | (int)platformsLayerMask);
 
             bool groundHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.down, _stats.GrounderDistance, ~_stats.PlayerLayer);
-            bool ceilingHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.up, _stats.GrounderDistance, ceilingCheckMask);
+            // bool ceilingHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.up, _stats.GrounderDistance, ceilingCheckMask);
 
-            if (ceilingHit) _frameVelocity.y = Mathf.Min(0, _frameVelocity.y);
+            // if (ceilingHit) _frameVelocity.y = Mathf.Min(0, _frameVelocity.y);
 
             if (!_grounded && groundHit)
             {
@@ -269,31 +281,55 @@ namespace PinPon
         
         #region Hitting
 
+        private bool _isHitting;
+
         public void TryHit()
         {
-            if (_racquetObject == null) return;
-            if (Time.time < _timeLastHit + _hitCooldown) return;
-            if (_racquetObject.activeInHierarchy) return;
+            // Don't hit if we're already hitting, or if the hit is on cooldown
+            if (_isHitting || Time.time < _timeLastHit + _hitCooldown) return;
 
+            // It's possible the objects aren't assigned in the inspector
+            if (_racquetObject == null || _hitZoneObject == null) return;
+
+            StartCoroutine(HitCoroutine());
+        }
+
+        private IEnumerator HitCoroutine()
+        {
+            _isHitting = true;
             _timeLastHit = Time.time;
-            
+
             float facingMultiplier = _isFacingLeft ? -1f : 1f;
 
-            _racquetObject.transform.localPosition = new Vector3(
-                Mathf.Abs(_racquetOriginalLocalPos.x) * facingMultiplier,
-                _racquetOriginalLocalPos.y,
-                _racquetOriginalLocalPos.z
-            );
+            // Position and scale the visual racquet
+            _racquetObject.transform.localPosition = new Vector3(Mathf.Abs(_racquetOriginalLocalPos.x) * facingMultiplier, _racquetOriginalLocalPos.y, _racquetOriginalLocalPos.z);
+            _racquetObject.transform.localScale = new Vector3(Mathf.Abs(_racquetOriginalLocalScale.x) * facingMultiplier, _racquetOriginalLocalScale.y, _racquetOriginalLocalScale.z);
 
-            _racquetObject.transform.localScale = new Vector3(
-                Mathf.Abs(_racquetOriginalLocalScale.x) * facingMultiplier,
-                _racquetOriginalLocalScale.y,
-                _racquetOriginalLocalScale.z
-            );
+            // Position and scale the hitbox
+            _hitZoneObject.transform.localPosition = new Vector3(Mathf.Abs(_hitZoneOriginalLocalPos.x) * facingMultiplier, _hitZoneOriginalLocalPos.y, _hitZoneOriginalLocalPos.z);
+            _hitZoneObject.transform.localScale = new Vector3(Mathf.Abs(_hitZoneOriginalLocalScale.x) * facingMultiplier, _hitZoneOriginalLocalScale.y, _hitZoneOriginalLocalScale.z);
             
+            // Activate both objects
             _racquetObject.SetActive(true);
+            _hitZoneObject.SetActive(true);
+
+            // Wait for the duration of the hit
+            yield return new WaitForSeconds(_hitZoneTime);
+
+            // Deactivate both objects
+            _racquetObject.SetActive(false);
+            _hitZoneObject.SetActive(false);
+            _isHitting = false;
         }
         
+        public void ApplyKnockback(Vector2 direction, float force)
+        {
+            Debug.Log($"Applying knockback with direction {direction} and force {force}");
+            _frameVelocity = Vector2.zero;
+            _frameVelocity += direction.normalized * force;
+        }
+
+
         #endregion
 
         private void ApplyMovement() => _rb.velocity = _frameVelocity;

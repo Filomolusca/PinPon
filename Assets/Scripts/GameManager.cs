@@ -342,6 +342,7 @@ public void ResetRound()
     public void ResetSeagulls()
     {
         // Encontra todas as gaivotas ativas na cena e as destrói
+        StopCoroutine("DestroySeagull");
         var seagulls = GameObject.FindGameObjectsWithTag("seagullPin");
         foreach (var seagull in seagulls)
         {

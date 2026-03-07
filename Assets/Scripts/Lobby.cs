@@ -9,6 +9,7 @@ public class Lobby : MonoBehaviour
     public GameObject beginButton;
     public GameObject player1; // UI para indicar que o Player 1 conectou
     public GameObject player2; // UI para indicar que o Player 2 conectou
+    public AudioSource lobbyMusic;
 
     void Start()
     {
@@ -16,6 +17,7 @@ public class Lobby : MonoBehaviour
         player1.SetActive(true);
         player2.SetActive(true);
         beginButton.SetActive(false);
+        lobbyMusic.Play();
     }
 
     // Este método será chamado pelo PlayerConfigurationManager quando um jogador entrar
@@ -43,6 +45,7 @@ public class Lobby : MonoBehaviour
         PlayerPrefs.SetInt("ScorePin", 0);
         PlayerPrefs.SetInt("ScorePon", 0);
         SceneManager.LoadScene("Match");
+        lobbyMusic.Stop();
     }
 
     public void QuitGame()

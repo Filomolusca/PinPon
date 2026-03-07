@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using PinPon;
 
 public class ball_movement : MonoBehaviour
 {
@@ -43,7 +44,23 @@ public class ball_movement : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         bool validHit = false;
-        if (collision.gameObject.GetComponent<RacquetController>() != null || collision.gameObject.GetComponent<BouncesAndSpeedsUpBall>() != null)
+
+        // if (collision.gameObject.CompareTag("pin") || collision.gameObject.CompareTag("pon"))
+        // {
+        //     PinPonPlayerController playerController = collision.gameObject.GetComponent<PinPonPlayerController>();
+        //     if (playerController != null)
+        //     {
+        //         Vector2 knockbackDirection = collision.transform.position - transform.position;
+
+        //         float knockbackForce = 5f; // Ajuste este valor para controlar a força do knockback
+        //         playerController.ApplyKnockback(knockbackDirection, knockbackForce);
+        //         Debug.Log("Bola empurrou um jogador!");
+
+        //         validHit = true;
+        //     }
+        // }
+
+        if (collision.gameObject.GetComponent<BouncesAndSpeedsUpBall>() != null)
         {
             validHit = true;
         }
@@ -134,18 +151,24 @@ public class ball_movement : MonoBehaviour
         speed = 0;
         rb.velocity = Vector2.zero;
         if(score != null) score.ballCounterValue = 1;
+        spriteRenderer.enabled = false;
+        DestroyExcessBalls();
+        if(gameManager != null) gameManager.RestartGame();
+        Launch();
+
         
-        if (gameObject.CompareTag("bolaOriginal"))
-        {
-            DestroyExcessBalls(); // Só a bola original pode destruir as outras
-            spriteRenderer.enabled = false;
-            if(gameManager != null) gameManager.RestartGame();
-            Launch();
-        }
-        else
-        {
-            Destroy(gameObject); // Bolas extras se destroem ao invés de reiniciar o jogo
-        }
+        // if (gameObject.CompareTag("bolaOriginal"))
+        // {
+        //     DestroyExcessBalls(); // Só a bola original pode destruir as outras
+        //     spriteRenderer.enabled = false;
+        //     if(gameManager != null) gameManager.RestartGame();
+        //     Launch();
+        // }
+        // else
+        // {
+        //     if(gameManager != null) gameManager.RestartGame();
+        //     Destroy(gameObject); // Bolas extras se destroem ao invés de reiniciar o jogo
+        // }
     }
 
     public void DestroyExcessBalls()
