@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 7326122761983855354}
   m_Layer: 8
   m_Name: Bola
-  m_TagString: bolaOriginal
+  m_TagString: bola
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -85,15 +85,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38dce96f21a9b6f4abb10fa26411efed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialSpeed: 8
+  initialSpeed: 5
   speed: 5
   speedIncrement: 0.5
   rb: {fileID: 7576166899250106762}
   gameManager: {fileID: 0}
   score: {fileID: 0}
-  spawnPoint: {fileID: 0}
+  spawnPoint: {fileID: 1517178591433528594, guid: ee6d46aa75990534283707d1453330e2, type: 3}
   SnowballHit: {fileID: 8300000, guid: e731b0c3c37777c419c24d1772618dcf, type: 3}
   IcebergCrack: {fileID: 8300000, guid: d202f65b297b6fd4a881d2ca7adb4296, type: 3}
+  trailRenderer: {fileID: 0}
 --- !u!50 &7576166899250106762
 Rigidbody2D:
   serializedVersion: 4

@@ -12,7 +12,6 @@ public class snowman : MonoBehaviour
     [Header("Referências")]
     public GameManager gameManager; // Arraste o GameManager da cena aqui
     public Score score; // Arraste o Score da cena aqui
-    public GameObject originalBall; // Arraste a bola original da cena aqui
 
     [Header("Efeitos")]
     public Animator animator;
@@ -29,6 +28,7 @@ public class snowman : MonoBehaviour
         hp = initialHP;
         if(animator == null) animator = GetComponent<Animator>();
         if(audioSource == null) audioSource = GetComponent<AudioSource>();
+        RestartSnowman();
     }
 
     void Update()
@@ -39,7 +39,7 @@ public class snowman : MonoBehaviour
         if (hp <= 0)
         {
             animator.Play("Snowman_Throw_Ball");
-            SpawnNewBall();
+            LaunchBall();
             hp = initialHP; // Reseta a vida após jogar a bola
         }
     }
@@ -51,37 +51,34 @@ public class snowman : MonoBehaviour
         hasCollided = false;
         animator.Play("Snowman_Throw_Ball");
         if(snowmanThrowBall != null) audioSource.PlayOneShot(snowmanThrowBall);
+        LaunchBall();
     }
 
-    private void SpawnNewBall()
+    private void LaunchBall()
     {
         if (currentBalls >= maxBalls) return;
         
-        if (originalBall != null && originalBall.TryGetComponent(out ball_movement originalBallScript))
-        {
-            GameObject newBallGO = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation);
-            ball_movement newBallScript = newBallGO.GetComponent<ball_movement>();
+        GameObject newBallGO = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation);
+        ball_movement newBallScript = newBallGO.GetComponent<ball_movement>();
 
-            // Injeção de Dependência!
-            newBallScript.gameManager = this.gameManager;
-            newBallScript.score = this.score;
-            newBallScript.spawnPoint = this.spawnPoint;
+        // Injeção de Dependência!
+        newBallScript.gameManager = this.gameManager;
+        newBallScript.score = this.score;
+        newBallScript.spawnPoint = this.spawnPoint;
 
-            // Define a velocidade da nova bola explicitamente, usando a da bola original.
-            newBallScript.speed = originalBallScript.speed;
-            
-            newBallScript.Launch();
-            
-            currentBalls++;
-            Debug.Log("Nova bola instanciada pelo Snowman.");
+        // A velocidade da bola será definida por ela mesma no seu método Launch.
+        
+        newBallScript.Launch();
+        
+        currentBalls++;
+        Debug.Log("Nova bola instanciada pelo Snowman.");
 
-            animator.SetBool("Throw", false);
-        }
+        animator.SetBool("Throw", false);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!hasCollided && (collision.gameObject.CompareTag("bolaOriginal") || collision.gameObject.CompareTag("bola")))
+        if (!hasCollided && collision.gameObject.CompareTag("bola"))
         {
             if(snowmanHit != null) audioSource.PlayOneShot(snowmanHit);
             hp--;

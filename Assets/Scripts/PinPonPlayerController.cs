@@ -15,14 +15,15 @@ namespace PinPon
         private Vector2 _frameVelocity;
         private bool _cachedQueryStartInColliders;
         private bool _isFacingLeft;
-
+        private int _playerLayer;
+        private int _platformLayer;
         public AudioClip jumpSound;
         private AudioSource audioSource;
         
         [Header("Hitting")]
         [SerializeField] private GameObject _racquetObject;
         [SerializeField] private float _hitCooldown = 0.5f;
-        [SerializeField] private float _hitZoneTime = 0.5f;
+        [SerializeField] private float _hitZoneTime = 0.3f;
         [SerializeField] private GameObject _hitZoneObject;
         private float _timeLastHit = float.MinValue;
         private Vector3 _racquetOriginalLocalPos;
@@ -36,7 +37,6 @@ namespace PinPon
         private Vector2 _moveInput;
         private bool _jumpHeldInput;
         private bool _fallDownInput;
-
         public int PlayerIndex { get; private set; }
         public event Action<bool, float> GroundedChanged;
         public event Action Jumped;
@@ -53,6 +53,10 @@ namespace PinPon
             _anim = GetComponent<Animator>();
             audioSource = GetComponent<AudioSource>();
             PlayerIndex = GetComponent<PlayerInput>().playerIndex;
+            trailRenderer = GetComponent<TrailRenderer>();
+            trailRenderer.emitting = false;
+            _playerLayer = gameObject.layer;
+            _platformLayer = LayerMask.NameToLayer("tile");
 
             _cachedQueryStartInColliders = Physics2D.queriesStartInColliders;
 
@@ -78,7 +82,7 @@ namespace PinPon
             if (_fallDownInput)
             {
                 if (_grounded) HandleFallThrough();
-                _fallDownInput = false; // Consome o input de um frame
+                _fallDownInput = false;
             }
 
             UpdateAnimator();
@@ -94,6 +98,12 @@ namespace PinPon
         {
             if (context.started)
             {
+                if (_moveInput.y <= -0.8f)
+                {
+                    _fallDownInput = true;
+                    return;
+                }
+                
                 _jumpToConsume = true;
                 _timeJumpWasPressed = _time;
             }
@@ -119,6 +129,15 @@ namespace PinPon
             if (context.started)
             {
                 _fallDownInput = true;
+            }
+        }
+
+        public void OnDash(InputAction.CallbackContext context)
+        {
+            if (context.started)
+            {
+                Debug.Log("Botão de Dash pressionado!");
+                HandleDash();
             }
         }
         #endregion
@@ -152,8 +171,8 @@ namespace PinPon
         {
             Physics2D.queriesStartInColliders = false;
             
-            LayerMask platformsLayerMask = LayerMask.GetMask("Platforms");
-            LayerMask ceilingCheckMask = ~((int)_stats.PlayerLayer | (int)platformsLayerMask);
+            // LayerMask platformsLayerMask = LayerMask.GetMask("Platforms");
+            // LayerMask ceilingCheckMask = ~((int)_stats.PlayerLayer | (int)platformsLayerMask);
 
             bool groundHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.down, _stats.GrounderDistance, ~_stats.PlayerLayer);
             // bool ceilingHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.up, _stats.GrounderDistance, ceilingCheckMask);
@@ -167,12 +186,16 @@ namespace PinPon
                 _bufferedJumpUsable = true;
                 _endedJumpEarly = false;
                 GroundedChanged?.Invoke(true, Mathf.Abs(_frameVelocity.y));
+
+                Physics2D.IgnoreLayerCollision(_playerLayer, _platformLayer, false);
             }
             else if (_grounded && !groundHit)
             {
                 _grounded = false;
                 _frameLeftGrounded = _time;
                 GroundedChanged?.Invoke(false, 0);
+
+                Physics2D.IgnoreLayerCollision(_playerLayer, _platformLayer, true);
             }
 
             Physics2D.queriesStartInColliders = _cachedQueryStartInColliders;
@@ -180,6 +203,46 @@ namespace PinPon
         
         #endregion
         
+        #region Dash
+        private bool _isDashing;
+        private float _timeLastDash;
+        private float _dashCooldown = 1f;
+        private float _dashDistance = 2.5f;
+        private float _dashSpeed = 15f;
+        public TrailRenderer trailRenderer;
+
+        private void HandleDash()
+        {
+            if (_isDashing || (_dashCooldown > 0 && Time.time < _timeLastDash + _dashCooldown)) return;
+
+            StartCoroutine(DashCoroutine());
+        }
+
+        private IEnumerator DashCoroutine()
+        {
+            audioSource.PlayOneShot(jumpSound);
+            trailRenderer.emitting = true;
+
+            Debug.Log("Iniciando Dash!");
+
+            _timeLastDash = Time.time;
+            _isDashing = true;
+
+            Vector2 dashDirection = _isFacingLeft ? Vector2.left : Vector2.right;
+            _frameVelocity += dashDirection * _dashSpeed;
+
+            float dashTime = _dashDistance / _dashSpeed;
+            yield return new WaitForSeconds(dashTime);
+
+            yield return new WaitUntil(() => _grounded); 
+
+            _isDashing = false;
+            trailRenderer.emitting = false;
+
+            Debug.Log("Dash concluído!");
+        }
+
+        #endregion
         #region Fall Through
 
         private void HandleFallThrough()
@@ -326,7 +389,7 @@ namespace PinPon
         {
             Debug.Log($"Applying knockback with direction {direction} and force {force}");
             _frameVelocity = Vector2.zero;
-            _frameVelocity += direction.normalized * force;
+            _frameVelocity += direction * force;
         }
 
 

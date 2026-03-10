@@ -5,9 +5,9 @@ using PinPon;
 public class ball_movement : MonoBehaviour
 {
     [Header("Movimento")]
-    public float initialSpeed = 8f;
+    public float initialSpeed;
     public float speed;
-    public float speedIncrement = 0.5f;
+    public float speedIncrement;
 
     [Header("Referências")]
     public Rigidbody2D rb;
@@ -20,6 +20,7 @@ public class ball_movement : MonoBehaviour
     public AudioClip SnowballHit;
     public AudioClip IcebergCrack;
     private SpriteRenderer spriteRenderer;
+    public TrailRenderer trailRenderer;
 
     void Awake()
     {
@@ -29,36 +30,26 @@ public class ball_movement : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
     }
 
-    void Start()
-    {
-        // As referências externas (gameManager, score, spawnPoint)
-        // devem ser injetadas antes do Start() ser chamado.
-        // Se a bola for a original na cena, ela lança a si mesma.
-        if (gameObject.CompareTag("bolaOriginal"))
-        {
-             spriteRenderer.enabled = false; // Começa invisível
-             Launch();
-        }
-    }
-
     private void OnCollisionEnter2D(Collision2D collision)
     {
         bool validHit = false;
 
-        // if (collision.gameObject.CompareTag("pin") || collision.gameObject.CompareTag("pon"))
-        // {
-        //     PinPonPlayerController playerController = collision.gameObject.GetComponent<PinPonPlayerController>();
-        //     if (playerController != null)
-        //     {
-        //         Vector2 knockbackDirection = collision.transform.position - transform.position;
+        if (collision.gameObject.CompareTag("pin") || collision.gameObject.CompareTag("pon"))
+        {
+            PinPonPlayerController playerController = collision.gameObject.GetComponent<PinPonPlayerController>();
+            if (playerController != null)
+            {
+                Vector2 knockbackDirection = collision.transform.position - transform.position;
 
-        //         float knockbackForce = 5f; // Ajuste este valor para controlar a força do knockback
-        //         playerController.ApplyKnockback(knockbackDirection, knockbackForce);
-        //         Debug.Log("Bola empurrou um jogador!");
+                float knockbackForce = 5f; // Ajuste este valor para controlar a força do knockback
+                playerController.ApplyKnockback(knockbackDirection, knockbackForce);
+                Debug.Log("Bola empurrou um jogador!");
 
-        //         validHit = true;
-        //     }
-        // }
+                validHit = true;
+            }
+        }
+        
+        if(SnowballHit != null) audioSource.PlayOneShot(SnowballHit);
 
         if (collision.gameObject.GetComponent<BouncesAndSpeedsUpBall>() != null)
         {
@@ -68,13 +59,9 @@ public class ball_movement : MonoBehaviour
         if (validHit)
         {
             IncreaseSpeed();
-            if(SnowballHit != null) audioSource.PlayOneShot(SnowballHit);
         }
-        else if (collision.gameObject.CompareTag("Untagged"))
-        {
-            if(SnowballHit != null) audioSource.PlayOneShot(SnowballHit);
-        }
-        
+
+
         // Lógica de pontuação com GetComponentInParent
         if (collision.gameObject.CompareTag("pontos") || collision.gameObject.CompareTag("pontos2"))
         {
@@ -82,12 +69,12 @@ public class ball_movement : MonoBehaviour
             if (hitIceberg != null)
             {
                 if(IcebergCrack != null) audioSource.PlayOneShot(IcebergCrack);
-                hitIceberg.Stages--; 
+                hitIceberg.Stages--;
                 Restart();
 
             }
         }
-        
+
         Vector2 direction = rb.velocity.normalized;
         direction.x += Random.Range(-0.1f, 0.1f);
         direction.y += Random.Range(-0.1f, 0.1f);
@@ -102,17 +89,22 @@ public class ball_movement : MonoBehaviour
     private IEnumerator LaunchWithDelay()
     {
         Debug.Log("Lançando bola...");
-        transform.position = spawnPoint.position;
-        rb.velocity = Vector2.zero;
+        // transform.position = spawnPoint.position;
+        // rb.velocity = Vector2.zero;
         spriteRenderer.enabled = false;
+
+        var balls = GameObject.FindGameObjectsWithTag("bola");
+        foreach (var ball in balls)
+        {
+            ball_movement ballScript = ball.GetComponent<ball_movement>();
+            if (ballScript != null)
+            {
+                speed = ballScript.speed;
+            }
+        }
 
         yield return new WaitForSeconds(1f); // Pequena pausa antes de lançar a bola
 
-        if (this.gameObject.CompareTag("bolaOriginal"))
-        { 
-            speed = initialSpeed;
-        }
-        
         // Para bolas extras, a velocidade é definida pelo Snowman.
         // Como um failsafe, se a velocidade for 0, usamos a inicial.
         if (speed <= 0)
@@ -120,7 +112,7 @@ public class ball_movement : MonoBehaviour
             Debug.LogWarning($"Velocidade da bola era {speed}. Usando a velocidade inicial como fallback.");
             speed = initialSpeed;
         }
-        
+
         if (spawnPoint == null)
         {
             Debug.LogError("Cannot launch ball, spawn point is not set!", this.gameObject);
@@ -131,7 +123,7 @@ public class ball_movement : MonoBehaviour
 
 
         float x = Random.Range(0, 2) == 0 ? -1 : 1;
-        float y = Random.Range(-0.1f, 0.4f);
+        float y = Random.Range(0.2f, 0.4f);
 
         Vector2 direction = new Vector2(x, y).normalized;
         rb.velocity = direction * speed;
@@ -140,45 +132,32 @@ public class ball_movement : MonoBehaviour
     private void IncreaseSpeed()
     {
         if (score != null && score.ballCounterValue >= 3) return;
-        
+
         speed += speedIncrement;
         if(score != null) score.ballCounterValue += 0.1f;
         rb.velocity = rb.velocity.normalized * speed;
+
+        // SetColorBasedOnSpeed();
     }
+
+    // private Gradient SetColorBasedOnSpeed()
+    // {
+    //     if (score == null) return Gradient.white;
+
+    //     if (score.ballCounterValue >= 1f)
+    //         return trailRenderer.colorGradient = Gradient.white;
+    //     else if (score.ballCounterValue >= 2f)
+    //         return trailRenderer.colorGradient = Gradient.yellow;
+    //     else if (score.ballCounterValue >= 3f)
+    //         return trailRenderer.colorGradient = Gradient.red;
+    //     else
+    //     return trailRenderer.colorGradient = Gradient.white;
+    // }
 
     public void Restart()
     {
-        speed = 0;
-        rb.velocity = Vector2.zero;
-        if(score != null) score.ballCounterValue = 1;
-        spriteRenderer.enabled = false;
-        DestroyExcessBalls();
+        speed = initialSpeed;
         if(gameManager != null) gameManager.RestartGame();
-        Launch();
-
-        
-        // if (gameObject.CompareTag("bolaOriginal"))
-        // {
-        //     DestroyExcessBalls(); // Só a bola original pode destruir as outras
-        //     spriteRenderer.enabled = false;
-        //     if(gameManager != null) gameManager.RestartGame();
-        //     Launch();
-        // }
-        // else
-        // {
-        //     if(gameManager != null) gameManager.RestartGame();
-        //     Destroy(gameObject); // Bolas extras se destroem ao invés de reiniciar o jogo
-        // }
-    }
-
-    public void DestroyExcessBalls()
-    {
-        GameObject[] allBalls = GameObject.FindGameObjectsWithTag("bola");
-        foreach (GameObject ball in allBalls)
-        {
-            // A bola original nunca tem a tag "bola", então não se destruirá.
-            Destroy(ball);
-        }
     }
 }
 

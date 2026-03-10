@@ -60,11 +60,16 @@ MonoBehaviour:
   victoryScreen: {fileID: 0}
   RoundScreen: {fileID: 0}
   score: {fileID: 6594260941738543384}
+  fadeImage: {fileID: 0}
+  fadeDuration: 0.4
+  snowExplosionEffect: {fileID: 0}
   ostMatch: {fileID: 8197081845477830394}
   spawnSeagullPin: {fileID: 0}
   spawnSeagullPon: {fileID: 0}
   seagullPinPrefab: {fileID: 595074872767637426, guid: e40bf04ce24806b41a29a58d2a4a7e08, type: 3}
   seagullPonPrefab: {fileID: 2715440481775688260, guid: 646f233609d5a2d41aa4fd463c961f4d, type: 3}
+  sfxSource: {fileID: 3924785054149115337}
+  seagullHitSound: {fileID: 8300000, guid: 071c43f2b71e6444baf2202d7887b649, type: 3}
   snowman: {fileID: 0}
 --- !u!114 &6594260941738543384
 MonoBehaviour:
@@ -295,7 +300,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 071c43f2b71e6444baf2202d7887b649, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.5
+  m_Volume: 0.4
   m_Pitch: 1
   Loop: 0
   Mute: 0

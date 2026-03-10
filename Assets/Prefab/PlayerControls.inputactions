@@ -40,6 +40,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Dash",
+                    "type": "Button",
+                    "id": "3b8afe09-2f15-4323-bf1a-c5d305a9693e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -176,7 +185,7 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "Fall",
+                    "name": "Controller",
                     "id": "3395744c-f8f8-436c-9a9a-9b5e3586e282",
                     "path": "ButtonWithOneModifier",
                     "interactions": "",
@@ -207,6 +216,28 @@
                     "action": "Fall",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "36dd9063-a4b3-4b01-a4cc-25fc4ad0064b",
+                    "path": "<Keyboard>/leftShift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "750722fe-cad7-45e5-8992-3975531048b9",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

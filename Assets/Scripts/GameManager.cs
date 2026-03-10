@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 using UnityEngine.InputSystem;
 using PinPon; // Namespace do PinPonPlayerController
 
@@ -22,6 +24,9 @@ public class GameManager : MonoBehaviour
     public GameObject victoryScreen;
     public GameObject RoundScreen;
     public Score score;
+    public Image fadeImage;
+    public float fadeDuration = 0.4f;
+    public GameObject snowExplosionEffect;
     
     [Header("Outros Sistemas")]
     public AudioSource ostMatch;
@@ -29,6 +34,8 @@ public class GameManager : MonoBehaviour
     public Transform spawnSeagullPon;
     public GameObject seagullPinPrefab;
     public GameObject seagullPonPrefab;
+    public AudioSource sfxSource;
+    public AudioClip seagullHitSound;
     public snowman snowman;
 
     private bool isPaused = false;
@@ -147,6 +154,8 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Round!");
         RoundScreen.SetActive(true);
+
+        DisablePlayerInputs();
         Time.timeScale = 0f;
         StartCoroutine(WaitForSpace());
             
@@ -160,6 +169,41 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void DisablePlayerInputs()
+    {
+        var playerConfigs = PlayerConfigurationManager.Instance.PlayerConfigs;
+        foreach (var config in playerConfigs)
+        {
+            if (config.PlayerInstance != null)
+            {
+                var playerInput = config.PlayerInstance.GetComponent<PlayerInput>();
+                if (playerInput != null)
+                {
+                    // Usando "Player", que é o nome padrão do mapa de ações.
+                    playerInput.actions.FindActionMap("Player").Disable();
+                    Debug.Log($"Inputs desabilitados para o jogador {config.PlayerIndex}");
+                }
+            }
+        }
+    }
+
+    private void EnablePlayerInputs()
+    {
+        var playerConfigs = PlayerConfigurationManager.Instance.PlayerConfigs;
+        foreach (var config in playerConfigs)
+        {
+            if (config.PlayerInstance != null)
+            {
+                var playerInput = config.PlayerInstance.GetComponent<PlayerInput>();
+                if (playerInput != null)
+                {
+                    playerInput.actions.FindActionMap("Player").Enable();
+                    Debug.Log($"Inputs habilitados para o jogador {config.PlayerIndex}");
+                }
+            }
+        }
+    }
+
     private IEnumerator WaitForSpace()
     {
         yield return null; 
@@ -168,6 +212,7 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
         
+        EnablePlayerInputs();
         if(ostMatch != null) ostMatch.Play();
         Debug.Log("Round Começou!");
         Time.timeScale = 1f;
@@ -192,7 +237,10 @@ public class GameManager : MonoBehaviour
     //     if(snowman != null) snowman.RestartSnowman();
     // }
     public void RestartGame()
-{
+    {
+
+    StartCoroutine(Fade(1f));
+    
     // Reposiciona os jogadores para suas posições iniciais
     for (int i = 0; i < activePlayers.Count; i++)
     {
@@ -201,6 +249,14 @@ public class GameManager : MonoBehaviour
             activePlayers[i].transform.position = initialPositions[i];
         }
     }
+
+    var balls = GameObject.FindGameObjectsWithTag("bola"); 
+    foreach (var ball in balls)
+    {
+        Destroy(ball);
+    }
+
+    score.ballCounterValue = 1;
     
     Time.timeScale = 1f;
 
@@ -209,7 +265,8 @@ public class GameManager : MonoBehaviour
     {
         snowman.RestartSnowman();
     }
-}
+
+    }
     
     // public void ScorePoint()
     // {
@@ -247,18 +304,6 @@ public void ResetRound()
         }
     }
     spawnedIcebergs.Clear();
-
-
-
-    // 2. Destrói a bola (ou bolas) em jogo
-    // var balls = GameObject.FindGameObjectsWithTag("bola"); // Certifique-se que sua bola tem a tag "Ball"
-    // if(balls != null)
-    // {
-    //     foreach (var ball in balls)
-    //     {
-    //         Destroy(ball);
-    //     }
-    // }
     
     // 3. Recria os icebergs e reposiciona os jogadores
     // Como a cena não foi recarregada, a referência a 'config.PlayerInstance' ainda é válida.
@@ -277,6 +322,29 @@ public void ResetRound()
             if (isPaused) ResumeGame();
             else PauseGame();
         }
+    }
+    public IEnumerator Fade(float targetAlpha)
+    {
+        snowExplosionEffect.SetActive(true);
+
+        float startAlpha = fadeImage.color.a;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float newAlpha = Mathf.Lerp(startAlpha, targetAlpha, elapsedTime / fadeDuration);
+            fadeImage.color = new Color(fadeImage.color.r, fadeImage.color.g, fadeImage.color.b, newAlpha);
+            yield return null;
+        }
+
+        fadeImage.color = new Color(fadeImage.color.r, fadeImage.color.g, fadeImage.color.b, targetAlpha);
+
+        if (targetAlpha == 1f)
+        {
+            StartCoroutine(Fade(0f));
+        }
+        snowExplosionEffect.SetActive(false);
     }
     
     public void PauseGame()
@@ -318,6 +386,7 @@ public void ResetRound()
     {
         if (seagullInstance != null)
         {
+            sfxSource.PlayOneShot(seagullHitSound);        
             StartCoroutine(DestroySeagull(seagullInstance));
         }
     }
@@ -342,7 +411,6 @@ public void ResetRound()
     public void ResetSeagulls()
     {
         // Encontra todas as gaivotas ativas na cena e as destrói
-        StopCoroutine("DestroySeagull");
         var seagulls = GameObject.FindGameObjectsWithTag("seagullPin");
         foreach (var seagull in seagulls)
         {
