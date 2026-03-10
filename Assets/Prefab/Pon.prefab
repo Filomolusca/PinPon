@@ -406,11 +406,11 @@ MonoBehaviour:
   _stats: {fileID: 11400000, guid: 05e6a06c5af93134ab98ff12e2c27265, type: 2}
   jumpSound: {fileID: 8300000, guid: 2a29f70793d4db246b186011539a5c13, type: 3}
   _racquetObject: {fileID: 5569416320393545044}
-  _hitCooldown: 0.5
+  _hitCooldown: 0.4
   _hitZoneTime: 0.2
   _hitZoneObject: {fileID: 8553811380487436133}
   assignedIceberg: {fileID: 7652276841753296987, guid: 9d52a8fd12136c44bb5763e314ca3132, type: 3}
-  trailRenderer: {fileID: 0}
+  trailRenderer: {fileID: 6410670903728344953}
 --- !u!114 &-8119867887048084184
 MonoBehaviour:
   m_ObjectHideFlags: 0

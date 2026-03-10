@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using UnityEngine.InputSystem;
 
 public class Lobby : MonoBehaviour
 {
@@ -11,6 +12,17 @@ public class Lobby : MonoBehaviour
     public GameObject player2; // UI para indicar que o Player 2 conectou
     public AudioSource lobbyMusic;
 
+    private InputAction startGameAction;
+    private bool canStartGame = false;
+
+    void Awake()
+    {
+        // Cria a ação de input para iniciar o jogo
+        startGameAction = new InputAction("StartGame");
+        startGameAction.AddBinding("<Keyboard>/space");
+        startGameAction.AddBinding("<Gamepad>/buttonSouth"); // Botão A no Xbox, X no PlayStation
+    }
+
     void Start()
     {
         // Garante que a UI comece no estado correto
@@ -18,6 +30,33 @@ public class Lobby : MonoBehaviour
         player2.SetActive(true);
         beginButton.SetActive(false);
         lobbyMusic.Play();
+        
+        // Garante que a ação de start esteja desabilitada no início
+        startGameAction.Disable();
+    }
+    
+    private void OnEnable()
+    {
+        // É uma boa prática habilitar a ação aqui caso o objeto seja desativado/reativado
+        if (canStartGame)
+        {
+            startGameAction.Enable();
+        }
+    }
+
+    private void OnDisable()
+    {
+        // Desabilita a ação para evitar execuções indesejadas
+        startGameAction.Disable();
+    }
+
+    void Update()
+    {
+        // Se a ação de start foi pressionada e o jogo pode começar
+        if (canStartGame && startGameAction.triggered)
+        {
+            StartGame();
+        }
     }
 
     // Este método será chamado pelo PlayerConfigurationManager quando um jogador entrar
@@ -36,12 +75,28 @@ public class Lobby : MonoBehaviour
             player2.SetActive(!p2Ready);
 
             // O botão para começar só aparece se ambos estiverem prontos
-            beginButton.SetActive(p1Ready && p2Ready);
+            canStartGame = p1Ready && p2Ready;
+            beginButton.SetActive(canStartGame);
+
+            if (canStartGame)
+            {
+                // Habilita a ação para que o jogo possa ser iniciado
+                startGameAction.Enable();
+            }
+            else
+            {
+                // Desabilita para não iniciar acidentalmente
+                startGameAction.Disable();
+            }
         }
     }
     
     public void StartGame()
     {
+        // Desabilita a ação para prevenir múltiplos cliques
+        startGameAction.Disable();
+        canStartGame = false;
+
         PlayerPrefs.SetInt("ScorePin", 0);
         PlayerPrefs.SetInt("ScorePon", 0);
         SceneManager.LoadScene("Match");

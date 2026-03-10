@@ -60,6 +60,7 @@ public class GameManager : MonoBehaviour
 
         // Orquestra a criação dos jogadores e da partida
         SpawnAndSetupPlayers();
+        ResetSeagulls();
         BeginMatch();
     }
     
@@ -218,6 +219,15 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         RoundScreen.SetActive(false);
     }
+
+    // public void BeginGameAfterPause()
+    // {
+    //     EnablePlayerInputs();
+    //     if(ostMatch != null) ostMatch.Play();
+    //     Debug.Log("Round Começou!");
+    //     Time.timeScale = 1f;
+    //     RoundScreen.SetActive(false);
+    // }
 
     // public void RestartGame()
     // {

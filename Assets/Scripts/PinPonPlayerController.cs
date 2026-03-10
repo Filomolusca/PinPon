@@ -22,8 +22,8 @@ namespace PinPon
         
         [Header("Hitting")]
         [SerializeField] private GameObject _racquetObject;
-        [SerializeField] private float _hitCooldown = 0.5f;
-        [SerializeField] private float _hitZoneTime = 0.3f;
+        [SerializeField] private float _hitCooldown;
+        [SerializeField] private float _hitZoneTime;
         [SerializeField] private GameObject _hitZoneObject;
         private float _timeLastHit = float.MinValue;
         private Vector3 _racquetOriginalLocalPos;
