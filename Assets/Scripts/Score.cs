@@ -17,9 +17,9 @@ public class Score : MonoBehaviour
     public TextMeshProUGUI scoreTextPon;
     public TextMeshProUGUI Winner;
     public GameManager gameManager;
-    public GameObject ballCounter;
-    public TextMeshProUGUI ballCounterText;
-    public float ballCounterValue;
+    // public GameObject ballCounter;
+    // public TextMeshProUGUI ballCounterText;
+    // public float ballCounterValue;
     // private AudioSource audioSource;
     // public AudioClip WinnerSound;
     // Start is called before the first frame update
@@ -60,10 +60,10 @@ public class Score : MonoBehaviour
             gameManager.GameOver();
             // audioSource.PlayOneShot(WinnerSound);
         }
-        if (ballCounterValue >= 1)
-        {
-            ballCounterText.text = ballCounterValue.ToString() + "x";
-        }
+        // if (ballCounterValue >= 1)
+        // {
+        //     ballCounterText.text = ballCounterValue.ToString() + "x";
+        // }
     }
     public void IncreaseScorePin()
     {

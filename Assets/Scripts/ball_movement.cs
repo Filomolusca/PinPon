@@ -30,6 +30,15 @@ public class ball_movement : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
     }
 
+    void FixedUpdate()
+    {
+        // Garante que a velocidade da bola seja consistente, mesmo após colisões.
+        if (rb.velocity.magnitude > 0)
+        {
+            rb.velocity = rb.velocity.normalized * speed;
+        }
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         bool validHit = false;
@@ -65,6 +74,14 @@ public class ball_movement : MonoBehaviour
         // Lógica de pontuação com GetComponentInParent
         if (collision.gameObject.CompareTag("pontos") || collision.gameObject.CompareTag("pontos2"))
         {
+            if (collision.gameObject.CompareTag("pontos"))
+            {
+                gameManager.snowExplosionEffectPin.SetActive(true);
+            }
+            else if (collision.gameObject.CompareTag("pontos2"))
+            {
+                gameManager.snowExplosionEffectPon.SetActive(true);
+            }
             iceberg hitIceberg = collision.gameObject.GetComponentInParent<iceberg>();
             if (hitIceberg != null)
             {
@@ -93,15 +110,15 @@ public class ball_movement : MonoBehaviour
         // rb.velocity = Vector2.zero;
         spriteRenderer.enabled = false;
 
-        var balls = GameObject.FindGameObjectsWithTag("bola");
-        foreach (var ball in balls)
-        {
-            ball_movement ballScript = ball.GetComponent<ball_movement>();
-            if (ballScript != null)
-            {
-                speed = ballScript.speed;
-            }
-        }
+        // var balls = GameObject.FindGameObjectsWithTag("bola");
+        // foreach (var ball in balls)
+        // {
+        //     ball_movement ballScript = ball.GetComponent<ball_movement>();
+        //     if (ballScript != null)
+        //     {
+        //         speed = ballScript.speed;
+        //     }
+        // }
 
         yield return new WaitForSeconds(1f); // Pequena pausa antes de lançar a bola
 
@@ -131,10 +148,10 @@ public class ball_movement : MonoBehaviour
 
     private void IncreaseSpeed()
     {
-        if (score != null && score.ballCounterValue >= 3) return;
+        if (speed >= initialSpeed*3) return;
 
         speed += speedIncrement;
-        if(score != null) score.ballCounterValue += 0.1f;
+        // if(score != null) score.ballCounterValue += 0.1f;
         rb.velocity = rb.velocity.normalized * speed;
 
         // SetColorBasedOnSpeed();

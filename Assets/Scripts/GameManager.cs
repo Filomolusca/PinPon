@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
     public Score score;
     public Image fadeImage;
     public float fadeDuration = 0.4f;
-    public GameObject snowExplosionEffect;
+
     
     [Header("Outros Sistemas")]
     public AudioSource ostMatch;
@@ -37,6 +37,8 @@ public class GameManager : MonoBehaviour
     public AudioSource sfxSource;
     public AudioClip seagullHitSound;
     public snowman snowman;
+    public GameObject snowExplosionEffectPin;
+    public GameObject snowExplosionEffectPon;
 
     private bool isPaused = false;
     private List<GameObject> activePlayers = new List<GameObject>();
@@ -266,7 +268,7 @@ public class GameManager : MonoBehaviour
         Destroy(ball);
     }
 
-    score.ballCounterValue = 1;
+    // score.ballCounterValue = 1;
     
     Time.timeScale = 1f;
 
@@ -335,7 +337,6 @@ public void ResetRound()
     }
     public IEnumerator Fade(float targetAlpha)
     {
-        snowExplosionEffect.SetActive(true);
 
         float startAlpha = fadeImage.color.a;
         float elapsedTime = 0f;
@@ -354,7 +355,8 @@ public void ResetRound()
         {
             StartCoroutine(Fade(0f));
         }
-        snowExplosionEffect.SetActive(false);
+        snowExplosionEffectPin.SetActive(false);
+        snowExplosionEffectPon.SetActive(false);
     }
     
     public void PauseGame()

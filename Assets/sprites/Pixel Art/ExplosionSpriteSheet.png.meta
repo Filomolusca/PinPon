@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: b862fec73f4e6244fb42295630dc3f7e
+guid: 9efc0382a1f442d45a6a734803c36eac
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -48,7 +48,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 32
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -110,64 +110,148 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: HitZoneAnim_0
+      name: ExplosionSpriteSheet_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 27
-        height: 48
-      alignment: 9
-      pivot: {x: 0.5555822, y: 0.49398747}
+        x: 116
+        y: 20
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: aba005543c8c4ff4686377d0b1b1d7c0
-      internalID: 2022753316
+      spriteID: 91bad538379c83d428e2b5a0d262cc91
+      internalID: -1117188703
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HitZoneAnim_1
+      name: ExplosionSpriteSheet_3
       rect:
         serializedVersion: 2
-        x: 26
-        y: 0
-        width: 27
-        height: 48
-      alignment: 9
-      pivot: {x: 0.49786237, y: 0.48797497}
+        x: 49
+        y: 25
+        width: 23
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3ee5fe7bf49e0c746bc4e93bea2d9ded
-      internalID: 1565820456
+      spriteID: c623e700910921a41aebe34edb7a1cbf
+      internalID: -2044941123
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: HitZoneAnim_2
+      name: ExplosionSpriteSheet_4
       rect:
         serializedVersion: 2
-        x: 52
-        y: 0
-        width: 27
-        height: 48
-      alignment: 9
-      pivot: {x: 0.5, y: 0.47835496}
+        x: 80
+        y: 22
+        width: 28
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cfd8509c5af8b9545b1f4e407a5017e2
-      internalID: 1207479879
+      spriteID: 2d734efd12d4b274f9659a876afdc5d5
+      internalID: 151058806
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ExplosionSpriteSheet_9
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 30
+        width: 9
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fc0a9d9980c849f4485252016e4ce125
+      internalID: -267137431
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ExplosionSpriteSheet_10
+      rect:
+        serializedVersion: 2
+        x: 30
+        y: 29
+        width: 13
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cf3f3e91feca7ad44aaaeec84cf18225
+      internalID: -2078508349
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ExplosionSpriteSheet_1
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 13
+        width: 38
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b9fb9ada008095840b84bedc20de1800
+      internalID: 1914703621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ExplosionSpriteSheet_2
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 12
+        width: 38
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 84eb71fd5d0d2154faef7c054c8f4fd1
+      internalID: 2057419322
       vertices: []
       indices: 
       edges: []
@@ -183,9 +267,25 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      HitZoneAnim_0: 2022753316
-      HitZoneAnim_1: 1565820456
-      HitZoneAnim_2: 1207479879
+      ExplosionSpriteSheet_0: -1117188703
+      ExplosionSpriteSheet_1: 1914703621
+      ExplosionSpriteSheet_10: -2078508349
+      ExplosionSpriteSheet_11: 1381825608
+      ExplosionSpriteSheet_12: -1076530914
+      ExplosionSpriteSheet_13: 723796145
+      ExplosionSpriteSheet_14: 1498805827
+      ExplosionSpriteSheet_15: -1096403949
+      ExplosionSpriteSheet_16: 1712921481
+      ExplosionSpriteSheet_17: 79275689
+      ExplosionSpriteSheet_18: -1571844261
+      ExplosionSpriteSheet_2: 2057419322
+      ExplosionSpriteSheet_3: -2044941123
+      ExplosionSpriteSheet_4: 151058806
+      ExplosionSpriteSheet_5: -1395533908
+      ExplosionSpriteSheet_6: -1601092006
+      ExplosionSpriteSheet_7: 125658648
+      ExplosionSpriteSheet_8: 1599027538
+      ExplosionSpriteSheet_9: -267137431
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
