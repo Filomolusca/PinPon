@@ -32,6 +32,11 @@ namespace PinPon
         private Vector3 _hitZoneOriginalLocalScale;
 
 
+        public GameObject aimLine;
+        public bool _isBombPickable = false;
+        private bool _isBombHeld = false;
+        private GameObject bombToLaunch;
+
         #region Interface
 
         private Vector2 _moveInput;
@@ -53,7 +58,7 @@ namespace PinPon
             _anim = GetComponent<Animator>();
             audioSource = GetComponent<AudioSource>();
             PlayerIndex = GetComponent<PlayerInput>().playerIndex;
-            trailRenderer = GetComponent<TrailRenderer>();
+            // trailRenderer = GetComponent<TrailRenderer>();
             trailRenderer.emitting = false;
             _playerLayer = gameObject.layer;
             _platformLayer = LayerMask.NameToLayer("tile");
@@ -124,6 +129,24 @@ namespace PinPon
             }
         }
 
+        public void OnPickUpBomb(InputAction.CallbackContext context)
+        {
+            if (context.started)
+            {
+                if (_isBombPickable && !_isBombHeld)
+                {
+                Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f, LayerMask.GetMask("bomb"));
+                foreach (var hit in hits)
+                {
+                    if (hit.CompareTag("Bomb"))
+                    {
+                        PickUpBomb(hit.gameObject);
+                        break;
+                    }
+                }
+                }
+            }
+        }
         public void OnFallDown(InputAction.CallbackContext context)
         {
             if (context.started)
@@ -170,9 +193,24 @@ namespace PinPon
         private void CheckCollisions()
         {
             Physics2D.queriesStartInColliders = false;
+
+
+            // Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f, LayerMask.GetMask("bomb"));
             
-            // LayerMask platformsLayerMask = LayerMask.GetMask("Platforms");
-            // LayerMask ceilingCheckMask = ~((int)_stats.PlayerLayer | (int)platformsLayerMask);
+            // if (hits.Length > 0)
+            // {
+            //     foreach (var hit in hits)
+            //     {
+            //         if (hit.CompareTag("Bomb"))
+            //         {
+            //             hit.gameObject.GetComponent<SpriteRenderer>().color = new Color(1f, 0.5f, 0.5f);
+            //         }
+            //     }
+            // }
+            // else
+            // {
+                
+            // }
 
             bool groundHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.down, _stats.GrounderDistance, ~_stats.PlayerLayer);
             // bool ceilingHit = Physics2D.CapsuleCast(_col.bounds.center, _col.size, _col.direction, 0, Vector2.up, _stats.GrounderDistance, ceilingCheckMask);
@@ -348,6 +386,12 @@ namespace PinPon
 
         public void TryHit()
         {
+            if (_isBombPickable) return;
+
+            if (_isBombHeld)
+            {
+                LaunchBomb(bombToLaunch);
+            }
             // Don't hit if we're already hitting, or if the hit is on cooldown
             if (_isHitting || Time.time < _timeLastHit + _hitCooldown) return;
 
@@ -395,6 +439,94 @@ namespace PinPon
 
         #endregion
 
+        #region Bomb
+
+        public void PickUpBomb(GameObject bomb)
+        {
+            _isBombPickable = false;
+            _isBombHeld = true;
+
+            _rb.isKinematic = true;
+            _frameVelocity = Vector2.zero;
+            _moveInput = Vector2.zero;
+            _jumpHeldInput = false;
+            
+            bomb.transform.SetParent(transform);
+            bomb.transform.localPosition = new Vector3(0, 3f, 0);
+
+            bombToLaunch = bomb;
+            StartCoroutine(AimBombToLaunch());
+        }
+
+        private IEnumerator AimBombToLaunch()
+        {
+            aimLine.SetActive(true);
+
+            while (aimLine.activeSelf)
+            {
+                var initialPosition = (Vector2)transform.position;
+                var mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+                var initialVelocity = (mousePosition - initialPosition).normalized * 6f;
+
+                // var futurePosition = initialPosition + (initialVelocity * Time.time) + (Physics2D.gravity * Time.time * Time.time / 2f);
+
+                var lineRenderer = aimLine.GetComponent<LineRenderer>();
+
+                var linePoints = new Vector3[20];
+                for (int i = 0; i < 20; i++)
+                {
+                    float t = i * 0.1f;
+                    linePoints[i] = initialPosition + (initialVelocity * t) + (Physics2D.gravity * t * t / 2f);
+                }
+                lineRenderer.SetPositions(linePoints);
+
+                yield return null;
+            }
+        }
+
+        public void LaunchBomb(GameObject bomb)
+        {
+            aimLine.SetActive(false);
+            bombToLaunch = null;
+            _isBombHeld = false;
+
+            _rb.isKinematic = false;
+            _frameVelocity = Vector2.zero;
+            _moveInput = Vector2.zero;
+            _jumpHeldInput = false;
+
+            bomb.transform.SetParent(null);
+            var mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+            var launchDirection = (mousePosition - (Vector2)transform.position).normalized;
+
+            bomb.GetComponent<BombController>().Throw(launchDirection);
+
+        }
+        public void Stun(float duration)
+        {
+            StartCoroutine(StunCoroutine(duration));
+        }
+
+        private IEnumerator StunCoroutine(float duration)
+        {
+            while (duration > 0)
+            {
+                duration -= Time.deltaTime;
+
+                _rb.isKinematic = true;
+                _frameVelocity = Vector2.zero;
+                _moveInput = Vector2.zero;
+                _jumpHeldInput = false;
+
+                yield return null;
+            }
+
+            _rb.isKinematic = false;
+        }
+
+
+
+        #endregion
         private void ApplyMovement() => _rb.velocity = _frameVelocity;
 
 #if UNITY_EDITOR

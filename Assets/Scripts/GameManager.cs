@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
     public snowman snowman;
     public GameObject snowExplosionEffectPin;
     public GameObject snowExplosionEffectPon;
-
+    public GameObject bombPrefab;
     private bool isPaused = false;
     private List<GameObject> activePlayers = new List<GameObject>();
     private List<Vector2> initialPositions = new List<Vector2>();
@@ -170,6 +170,8 @@ public class GameManager : MonoBehaviour
         {
             isFirstRound = false;
         }
+
+        StartCoroutine(WaitForBombSpawn());
     }
 
     private void DisablePlayerInputs()
@@ -250,8 +252,10 @@ public class GameManager : MonoBehaviour
     // }
     public void RestartGame()
     {
-
-    StartCoroutine(Fade(1f));
+        if(!isFirstRound)
+        {
+            StartCoroutine(Fade(1f));
+        }
     
     // Reposiciona os jogadores para suas posições iniciais
     for (int i = 0; i < activePlayers.Count; i++)
@@ -438,6 +442,32 @@ public void ResetRound()
         Instantiate(seagullPinPrefab, spawnSeagullPin.position, spawnSeagullPin.rotation);
         Instantiate(seagullPonPrefab, spawnSeagullPon.position, spawnSeagullPon.rotation);
      }
+    #endregion
+
+    #region Bomba
+
+
+    public  IEnumerator WaitForBombSpawn()
+    {
+        float spawnTime = Random.Range(1f, 5f);
+        yield return new WaitForSeconds(spawnTime);
+
+        float pinIcebergX = icebergPinPrefab.transform.position.x;
+        float ponIcebergX = icebergPonPrefab.transform.position.x;
+        bool spawnOnPinSide = Random.value < 0.5f;
+        float spawnX = spawnOnPinSide ? Random.Range(pinIcebergX - pinIcebergX/3f, pinIcebergX + pinIcebergX/3f) : Random.Range(ponIcebergX + ponIcebergX/3f, ponIcebergX - ponIcebergX/3f);
+        float spawnY = 5f;
+
+        SpawnBomb(new Vector2(spawnX, spawnY));
+        Debug.Log("Bomb spawned after " + spawnTime + " seconds at position: " + new Vector2(spawnX, spawnY));
+    }
+    public void SpawnBomb(Vector2 position)
+    {
+        Debug.Log("Bomb Spawned!");
+        Instantiate(bombPrefab, position, Quaternion.identity);
+    }
+
+
     #endregion
 }
 

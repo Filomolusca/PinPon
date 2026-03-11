@@ -62,7 +62,6 @@ MonoBehaviour:
   score: {fileID: 6594260941738543384}
   fadeImage: {fileID: 0}
   fadeDuration: 0.4
-  snowExplosionEffect: {fileID: 0}
   ostMatch: {fileID: 8197081845477830394}
   spawnSeagullPin: {fileID: 0}
   spawnSeagullPon: {fileID: 0}
@@ -71,6 +70,9 @@ MonoBehaviour:
   sfxSource: {fileID: 3924785054149115337}
   seagullHitSound: {fileID: 8300000, guid: 071c43f2b71e6444baf2202d7887b649, type: 3}
   snowman: {fileID: 0}
+  snowExplosionEffectPin: {fileID: 0}
+  snowExplosionEffectPon: {fileID: 0}
+  bombPrefab: {fileID: 1599782448754517963, guid: 1fda2538a41d3944db83728772f3c690, type: 3}
 --- !u!114 &6594260941738543384
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,9 +95,6 @@ MonoBehaviour:
   scoreTextPon: {fileID: 0}
   Winner: {fileID: 0}
   gameManager: {fileID: 2576139758926762834}
-  ballCounter: {fileID: 0}
-  ballCounterText: {fileID: 0}
-  ballCounterValue: 1
 --- !u!82 &3576051561850945986
 AudioSource:
   m_ObjectHideFlags: 0

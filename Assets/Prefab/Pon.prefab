@@ -554,8 +554,10 @@ MonoBehaviour:
   _hitCooldown: 0.4
   _hitZoneTime: 0.2
   _hitZoneObject: {fileID: 8553811380487436133}
+  aimLine: {fileID: 0}
+  _isBombPickable: 0
   assignedIceberg: {fileID: 7652276841753296987, guid: 9d52a8fd12136c44bb5763e314ca3132, type: 3}
-  trailRenderer: {fileID: 0}
+  trailRenderer: {fileID: 5644577491353308978}
 --- !u!114 &-8119867887048084184
 MonoBehaviour:
   m_ObjectHideFlags: 0
