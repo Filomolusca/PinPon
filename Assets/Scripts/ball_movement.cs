@@ -71,25 +71,10 @@ public class ball_movement : MonoBehaviour
         }
 
 
-        // Lógica de pontuação com GetComponentInParent
+
         if (collision.gameObject.CompareTag("pontos") || collision.gameObject.CompareTag("pontos2"))
         {
-            if (collision.gameObject.CompareTag("pontos"))
-            {
-                gameManager.snowExplosionEffectPin.SetActive(true);
-            }
-            else if (collision.gameObject.CompareTag("pontos2"))
-            {
-                gameManager.snowExplosionEffectPon.SetActive(true);
-            }
-            iceberg hitIceberg = collision.gameObject.GetComponentInParent<iceberg>();
-            if (hitIceberg != null)
-            {
-                if(IcebergCrack != null) audioSource.PlayOneShot(IcebergCrack);
-                hitIceberg.Stages--;
-                Restart();
-
-            }
+            gameManager.IcebergCrack(collision.gameObject);
         }
 
         Vector2 direction = rb.velocity.normalized;
@@ -109,21 +94,10 @@ public class ball_movement : MonoBehaviour
         // transform.position = spawnPoint.position;
         // rb.velocity = Vector2.zero;
         spriteRenderer.enabled = false;
-
-        // var balls = GameObject.FindGameObjectsWithTag("bola");
-        // foreach (var ball in balls)
-        // {
-        //     ball_movement ballScript = ball.GetComponent<ball_movement>();
-        //     if (ballScript != null)
-        //     {
-        //         speed = ballScript.speed;
-        //     }
-        // }
+        speed = initialSpeed;
 
         yield return new WaitForSeconds(1f); // Pequena pausa antes de lançar a bola
 
-        // Para bolas extras, a velocidade é definida pelo Snowman.
-        // Como um failsafe, se a velocidade for 0, usamos a inicial.
         if (speed <= 0)
         {
             Debug.LogWarning($"Velocidade da bola era {speed}. Usando a velocidade inicial como fallback.");
@@ -171,10 +145,10 @@ public class ball_movement : MonoBehaviour
     //     return trailRenderer.colorGradient = Gradient.white;
     // }
 
-    public void Restart()
-    {
-        speed = initialSpeed;
-        if(gameManager != null) gameManager.RestartGame();
-    }
+    // public void Restart()
+    // {
+    //     speed = initialSpeed;
+    //     if(gameManager != null) gameManager.RestartGame();
+    // }
 }
 

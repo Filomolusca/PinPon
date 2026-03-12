@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine;
+using System.Linq;
 
 namespace PinPon
 {
@@ -31,12 +33,12 @@ namespace PinPon
         private Vector3 _hitZoneOriginalLocalPos;
         private Vector3 _hitZoneOriginalLocalScale;
 
-
+        [Header("Bomb")]
         public GameObject aimLine;
-        public bool _isBombPickable = false;
+        // public bool _isBombPickable = false;
         private bool _isBombHeld = false;
         private GameObject bombToLaunch;
-
+        private List<BombController> _collectibleBombs = new List<BombController>();
         #region Interface
 
         private Vector2 _moveInput;
@@ -46,7 +48,7 @@ namespace PinPon
         public event Action<bool, float> GroundedChanged;
         public event Action Jumped;
         public iceberg assignedIceberg;
-
+        public bool _movementBlocked = false;
         #endregion
 
         private float _time;
@@ -96,6 +98,7 @@ namespace PinPon
         #region Métodos de Callback de Input
         public void OnMove(InputAction.CallbackContext context)
         {
+            if (_movementBlocked) return;
             _moveInput = context.ReadValue<Vector2>();
         }
 
@@ -125,28 +128,48 @@ namespace PinPon
         {
             if (context.started)
             {
-                TryHit();
+                if (_isBombHeld)
+                {
+                    LaunchBomb();
+                }
+
+                if (_collectibleBombs.Any())
+                    {
+                        BombController bombToPickUp = _collectibleBombs.FirstOrDefault();
+                        if (bombToPickUp != null && !bombToPickUp.isThrown)
+                        {
+                            PickUpBomb(bombToPickUp);
+                            return;
+                        }
+                    }
+        
+                else
+                {
+                    TryHit();
+                }
             }
+            // if (context.started)
+            // {
+            //     if (_isBombPickable && !_isBombHeld)
+            //     {
+            //     Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f, LayerMask.GetMask("bomb"));
+            //     foreach (var hit in hits)
+            //     {
+            //         if (hit.CompareTag("Bomb"))
+            //         {
+            //             PickUpBomb(hit.gameObject);
+            //             break;
+            //         }
+            //     }
+            //     }
+            //     else
+            //     {
+            //         TryHit();
+            //     }
+                
+            // }
         }
 
-        public void OnPickUpBomb(InputAction.CallbackContext context)
-        {
-            if (context.started)
-            {
-                if (_isBombPickable && !_isBombHeld)
-                {
-                Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 1f, LayerMask.GetMask("bomb"));
-                foreach (var hit in hits)
-                {
-                    if (hit.CompareTag("Bomb"))
-                    {
-                        PickUpBomb(hit.gameObject);
-                        break;
-                    }
-                }
-                }
-            }
-        }
         public void OnFallDown(InputAction.CallbackContext context)
         {
             if (context.started)
@@ -157,6 +180,8 @@ namespace PinPon
 
         public void OnDash(InputAction.CallbackContext context)
         {
+            if (_movementBlocked) return;
+            
             if (context.started)
             {
                 Debug.Log("Botão de Dash pressionado!");
@@ -164,10 +189,29 @@ namespace PinPon
             }
         }
         #endregion
+        public void BlockMovement()
+        {
+            if (_movementBlocked) 
+            return;
+
+            _frameVelocity = Vector2.zero;
+            _moveInput = Vector2.zero;
+            _jumpHeldInput = false;
+            _fallDownInput = false;
+            _movementBlocked = true;
+        }
+        public void UnblockMovement()
+        {
+            if (_movementBlocked)
+            _movementBlocked = false;
+        }
 
         private void FixedUpdate()
         {
             CheckCollisions();
+
+            if (_movementBlocked)
+                return;
 
             HandleJump();
             HandleDirection();
@@ -386,12 +430,12 @@ namespace PinPon
 
         public void TryHit()
         {
-            if (_isBombPickable) return;
+            // if (_isBombPickable) return;
 
-            if (_isBombHeld)
-            {
-                LaunchBomb(bombToLaunch);
-            }
+            // if (_isBombHeld)
+            // {
+            //     LaunchBomb(bombToLaunch);
+            // }
             // Don't hit if we're already hitting, or if the hit is on cooldown
             if (_isHitting || Time.time < _timeLastHit + _hitCooldown) return;
 
@@ -440,67 +484,124 @@ namespace PinPon
         #endregion
 
         #region Bomb
-
-        public void PickUpBomb(GameObject bomb)
+        public void AddCollectible(BombController bomb)
         {
-            _isBombPickable = false;
-            _isBombHeld = true;
+            if (!_collectibleBombs.Contains(bomb))
+            {
+                Debug.Log("Adicionando bomba coletável à lista do jogador.");
+                _collectibleBombs.Add(bomb);
+                bomb.ShowHighlight();
+            }
+        }
+        public void RemoveCollectible(BombController bomb)
+        {
+            if (_collectibleBombs.Contains(bomb))
+            {
+                Debug.Log("Removendo bomba coletável da lista do jogador.");
+                _collectibleBombs.Remove(bomb);
+                bomb.HideHighlight();
+            }
+        
+        }
+        // public void PickUpBomb(GameObject bomb)
+        // {
+        //     _isBombPickable = false;
+        //     _isBombHeld = true;
 
-            _rb.isKinematic = true;
-            _frameVelocity = Vector2.zero;
-            _moveInput = Vector2.zero;
-            _jumpHeldInput = false;
+        //     _rb.isKinematic = true;
+        //     _frameVelocity = Vector2.zero;
+        //     _moveInput = Vector2.zero;
+        //     _jumpHeldInput = false;
             
-            bomb.transform.SetParent(transform);
-            bomb.transform.localPosition = new Vector3(0, 3f, 0);
+        //     bomb.transform.SetParent(transform);
+        //     bomb.transform.localPosition = new Vector3(0, 3f, 0);
 
-            bombToLaunch = bomb;
+        //     bombToLaunch = bomb;
+        //     StartCoroutine(AimBombToLaunch());
+        // }
+
+        public void PickUpBomb (BombController bomb)
+        {
+            RemoveCollectible(bomb);
+
+            _isBombHeld = true;
+            bombToLaunch = bomb.gameObject;
+
+            BlockMovement();
+
+            bomb.transform.SetParent(transform);
+            bomb.transform.localPosition = new Vector3(0, 1.5f, 0);
+            bomb.GetComponent<Rigidbody2D>().isKinematic = true;
+
             StartCoroutine(AimBombToLaunch());
         }
 
         private IEnumerator AimBombToLaunch()
         {
+            BlockMovement();
+            var lineRenderer = aimLine.GetComponent<LineRenderer>();
             aimLine.SetActive(true);
-
-            while (aimLine.activeSelf)
+            while (_isBombHeld)
             {
-                var initialPosition = (Vector2)transform.position;
+                var initialPosition = bombToLaunch.transform.position;
                 var mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-                var initialVelocity = (mousePosition - initialPosition).normalized * 6f;
+                var launchDirection = (mousePosition - (Vector2)transform.position).normalized;
+                var initialVelocity = launchDirection * 6f;
 
                 // var futurePosition = initialPosition + (initialVelocity * Time.time) + (Physics2D.gravity * Time.time * Time.time / 2f);
-
-                var lineRenderer = aimLine.GetComponent<LineRenderer>();
 
                 var linePoints = new Vector3[20];
                 for (int i = 0; i < 20; i++)
                 {
                     float t = i * 0.1f;
-                    linePoints[i] = initialPosition + (initialVelocity * t) + (Physics2D.gravity * t * t / 2f);
+                    linePoints[i] = (Vector2)initialPosition + (initialVelocity * t) + (Physics2D.gravity * t * t / 2f);
                 }
+                lineRenderer.positionCount = linePoints.Length;
                 lineRenderer.SetPositions(linePoints);
 
                 yield return null;
             }
+
+            aimLine.SetActive(false);
         }
 
-        public void LaunchBomb(GameObject bomb)
+        // public void LaunchBomb(GameObject bomb)
+        // {
+        //     aimLine.SetActive(false);
+        //     bombToLaunch = null;
+        //     _isBombHeld = false;
+
+        //     UnblockMovement();
+
+        //     bomb.transform.SetParent(null);
+        //     var mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        //     var launchDirection = (mousePosition - (Vector2)transform.position).normalized;
+
+        //     bomb.GetComponent<BombController>().Throw(launchDirection);
+
+        // }
+        public void LaunchBomb()
         {
-            aimLine.SetActive(false);
-            bombToLaunch = null;
+            if (bombToLaunch == null) return;
+
             _isBombHeld = false;
 
-            _rb.isKinematic = false;
-            _frameVelocity = Vector2.zero;
-            _moveInput = Vector2.zero;
-            _jumpHeldInput = false;
+            UnblockMovement();
 
-            bomb.transform.SetParent(null);
+            var bombObject = bombToLaunch;
+            var bombController = bombObject.GetComponent<BombController>();
+            var bombRb = bombObject.GetComponent<Rigidbody2D>();
+
+            bombObject.transform.SetParent(null);
+            bombRb.isKinematic = false;
+
             var mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             var launchDirection = (mousePosition - (Vector2)transform.position).normalized;
 
-            bomb.GetComponent<BombController>().Throw(launchDirection);
-
+            bombController.Throw(launchDirection);
+            
+            bombToLaunch = null;
+            
         }
         public void Stun(float duration)
         {
@@ -517,11 +618,13 @@ namespace PinPon
                 _frameVelocity = Vector2.zero;
                 _moveInput = Vector2.zero;
                 _jumpHeldInput = false;
+                _rb.gravityScale = 0;
 
                 yield return null;
             }
 
             _rb.isKinematic = false;
+            _rb.gravityScale = 1f;
         }
 
 

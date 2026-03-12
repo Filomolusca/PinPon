@@ -46,6 +46,7 @@ public class GameManager : MonoBehaviour
     private List<GameObject> spawnedIcebergs = new List<GameObject>();
     private static bool isFirstRound = true;
 
+    #region Match Setup
     void Start()
     {
         // Garante que o estado inicial está limpo
@@ -174,6 +175,9 @@ public class GameManager : MonoBehaviour
         StartCoroutine(WaitForBombSpawn());
     }
 
+    #endregion
+
+    #region Player Input
     private void DisablePlayerInputs()
     {
         var playerConfigs = PlayerConfigurationManager.Instance.PlayerConfigs;
@@ -224,6 +228,8 @@ public class GameManager : MonoBehaviour
         RoundScreen.SetActive(false);
     }
 
+    #endregion
+
     // public void BeginGameAfterPause()
     // {
     //     EnablePlayerInputs();
@@ -250,6 +256,28 @@ public class GameManager : MonoBehaviour
     //     Time.timeScale = 1f;
     //     if(snowman != null) snowman.RestartSnowman();
     // }
+
+    #region Scoring
+
+    public void IcebergCrack(GameObject collision)
+    {
+            if (collision.gameObject.CompareTag("pontos"))
+            {
+                snowExplosionEffectPin.SetActive(true);
+            }
+            else if (collision.gameObject.CompareTag("pontos2"))
+            {
+                snowExplosionEffectPon.SetActive(true);
+            }
+            iceberg hitIceberg = collision.gameObject.GetComponentInParent<iceberg>();
+            if (hitIceberg != null)
+            {
+                // if(IcebergCrack != null) audioSource.PlayOneShot(IcebergCrack);
+                hitIceberg.Stages--;
+                RestartGame();
+
+            }
+    }
     public void RestartGame()
     {
         if(!isFirstRound)
@@ -257,80 +285,79 @@ public class GameManager : MonoBehaviour
             StartCoroutine(Fade(1f));
         }
     
-    // Reposiciona os jogadores para suas posições iniciais
-    for (int i = 0; i < activePlayers.Count; i++)
-    {
-        if(activePlayers[i] != null)
+        // Reposiciona os jogadores para suas posições iniciais
+        for (int i = 0; i < activePlayers.Count; i++)
         {
-            activePlayers[i].transform.position = initialPositions[i];
+            if(activePlayers[i] != null)
+            {
+                activePlayers[i].transform.position = initialPositions[i];
+            }
         }
-    }
 
-    var balls = GameObject.FindGameObjectsWithTag("bola"); 
-    foreach (var ball in balls)
-    {
-        Destroy(ball);
-    }
-
-    // score.ballCounterValue = 1;
-    
-    Time.timeScale = 1f;
-
-    // Reseta o snowman para ele poder lançar a bola de novo
-    if(snowman != null) 
-    {
-        snowman.RestartSnowman();
-    }
-
-    }
-    
-    // public void ScorePoint()
-    // {
-    //     Debug.Log("ScorePoint! Scene Reload!");
-    //     PlayerPrefs.SetInt("ScorePin", score.ScorePin);
-    //     PlayerPrefs.SetInt("ScorePon", score.ScorePon);
+        var balls = GameObject.FindGameObjectsWithTag("bola"); 
+        foreach (var ball in balls)
+        {
+            Destroy(ball);
+        }
         
-    //     SceneManager.LoadScene(SceneManager.GetActiveScene().name);    
-    // }
-    public void ScorePoint()
-{
-    Debug.Log("ScorePoint! Resetting round.");
-    PlayerPrefs.SetInt("ScorePin", score.ScorePin);
-    PlayerPrefs.SetInt("ScorePon", score.ScorePon);
-
-    // Verifica se alguém ganhou o jogo
-    if (score.ScorePin >= 3 || score.ScorePon >= 3) // Supondo que 3 pontos vencem
-    {
-        GameOver();
-    }
-    else
-    {
-        ResetRound();
-    }
-}
-
-public void ResetRound()
-{
-    // 1. Destrói os icebergs da rodada anterior
-    foreach (var iceberg in spawnedIcebergs)
-    {
-        if (iceberg != null)
+        var bombs = GameObject.FindGameObjectsWithTag("Bomb");
+        foreach (var bomb in bombs)
         {
-            Destroy(iceberg);
+            Destroy(bomb);
+        }
+        // score.ballCounterValue = 1;
+        
+        Time.timeScale = 1f;
+
+        if(snowman != null) 
+        {
+            snowman.RestartSnowman();
+        }
+
+        StartCoroutine(WaitForBombSpawn());
+
+    }
+    
+    public void ScorePoint()
+    {
+        Debug.Log("ScorePoint! Resetting round.");
+        PlayerPrefs.SetInt("ScorePin", score.ScorePin);
+        PlayerPrefs.SetInt("ScorePon", score.ScorePon);
+
+        // Verifica se alguém ganhou o jogo
+        if (score.ScorePin >= 3 || score.ScorePon >= 3) // Supondo que 3 pontos vencem
+        {
+            GameOver();
+        }
+        else
+        {
+            ResetRound();
         }
     }
-    spawnedIcebergs.Clear();
+
+    public void ResetRound()
+    {
+        // 1. Destrói os icebergs da rodada anterior
+        foreach (var iceberg in spawnedIcebergs)
+        {
+            if (iceberg != null)
+            {
+                Destroy(iceberg);
+            }
+        }
+        spawnedIcebergs.Clear();
+        
+        // 3. Recria os icebergs e reposiciona os jogadores
+        // Como a cena não foi recarregada, a referência a 'config.PlayerInstance' ainda é válida.
+        SpawnAndSetupPlayers();
+        ResetSeagulls();
+        RestartGame(); // Este seu método já reposiciona os players e o snowman
+        BeginMatch();  // Este seu método já mostra a tela "Round" e espera o jogador
+    }
+
+#endregion
     
-    // 3. Recria os icebergs e reposiciona os jogadores
-    // Como a cena não foi recarregada, a referência a 'config.PlayerInstance' ainda é válida.
-    SpawnAndSetupPlayers();
-    ResetSeagulls();
-    // 4. Reinicia os outros elementos e começa a próxima rodada
-    RestartGame(); // Este seu método já reposiciona os players e o snowman
-    BeginMatch();  // Este seu método já mostra a tela "Round" e espera o jogador
-}
-    
-    #region Métodos de Gerenciamento de Jogo (Pause, Game Over, etc.)
+#region Management and UI
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape) && !victoryScreen.activeSelf && !RoundScreen.activeSelf)
@@ -397,7 +424,7 @@ public void ResetRound()
     }
     #endregion
     
-    #region Lógica da Gaivota (Seagull)
+    #region Seagull
     public void SeagullKilled(GameObject seagullInstance)
     {
         if (seagullInstance != null)
@@ -444,7 +471,7 @@ public void ResetRound()
      }
     #endregion
 
-    #region Bomba
+    #region Bomb
 
 
     public  IEnumerator WaitForBombSpawn()
@@ -456,7 +483,7 @@ public void ResetRound()
         float ponIcebergX = icebergPonPrefab.transform.position.x;
         bool spawnOnPinSide = Random.value < 0.5f;
         float spawnX = spawnOnPinSide ? Random.Range(pinIcebergX - pinIcebergX/3f, pinIcebergX + pinIcebergX/3f) : Random.Range(ponIcebergX + ponIcebergX/3f, ponIcebergX - ponIcebergX/3f);
-        float spawnY = 5f;
+        float spawnY = 4.5f;
 
         SpawnBomb(new Vector2(spawnX, spawnY));
         Debug.Log("Bomb spawned after " + spawnTime + " seconds at position: " + new Vector2(spawnX, spawnY));
@@ -464,6 +491,14 @@ public void ResetRound()
     public void SpawnBomb(Vector2 position)
     {
         Debug.Log("Bomb Spawned!");
+        if(bombPrefab != null)
+        {
+            BombController bombController = bombPrefab.GetComponent<BombController>();
+            if (bombController != null)
+            {                
+                bombController.gameManager = this;
+            }
+        }
         Instantiate(bombPrefab, position, Quaternion.identity);
     }
 

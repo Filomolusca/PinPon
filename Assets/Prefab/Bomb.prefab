@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 4144641016028745314}
   - component: {fileID: 8203279629584061977}
   - component: {fileID: 328267062253400449}
-  - component: {fileID: 5467693649843550186}
   m_Layer: 11
   m_Name: Bomb
   m_TagString: Bomb
@@ -32,7 +31,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -3.08, y: -1.77, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5440756534767220696}
@@ -123,11 +122,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0183914de0f355d4fa7d26a1f6f40a44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionTime: 5
+  explosionTime: 15
   explosionEffect: {fileID: 4595707746246396472}
-  speed: 6
+  speed: 10
   gameManager: {fileID: 2576139758926762834, guid: 18b7c6b029f49f4488e35d58a723da28, type: 3}
   isThrown: 0
+  bombLanded: 0
 --- !u!50 &8203279629584061977
 Rigidbody2D:
   serializedVersion: 4
@@ -143,17 +143,17 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 0.05
-  m_Material: {fileID: 0}
+  m_GravityScale: 0.5
+  m_Material: {fileID: 6200000, guid: 847111e0a9b17e3438cd9c118403e2f8, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4294967295
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 2935
+    m_Bits: 512
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!58 &328267062253400449
 CircleCollider2D:
@@ -170,7 +170,7 @@ CircleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 2935
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -190,41 +190,6 @@ CircleCollider2D:
   m_Offset: {x: 0.015625, y: 0}
   serializedVersion: 2
   m_Radius: 0.25
---- !u!58 &5467693649843550186
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1599782448754517963}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0.015625, y: 0}
-  serializedVersion: 2
-  m_Radius: 1
 --- !u!1 &4595707746246396472
 GameObject:
   m_ObjectHideFlags: 0
@@ -242,7 +207,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5440756534767220696
 Transform:
   m_ObjectHideFlags: 0
@@ -296,9 +261,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: -1013051489
+  m_SortingLayer: 4
+  m_SortingOrder: 1
   m_Sprite: {fileID: -267137431, guid: 9efc0382a1f442d45a6a734803c36eac, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

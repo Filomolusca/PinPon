@@ -12,73 +12,155 @@ public class BombController : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     public GameManager gameManager;
     public bool isThrown = false;
+    public bool bombLanded = false;
+
+    private Color highlightColor = new Color(1f, 1f, 0.5f);
+    private Color originalColor;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        gameManager = FindObjectOfType<GameManager>();
+        originalColor = spriteRenderer.color;  
+        explosionEffect.SetActive(false);
+        spriteRenderer.enabled = true;
+        StartCoroutine(WaitForLanding());
+    }
+
+    private IEnumerator WaitForLanding()
+    {
+        while (!bombLanded)
+        {
+            if (rb.velocity.magnitude < 0.1f && isThrown)
+            {
+                rb.velocity = Vector2.zero;
+                rb.isKinematic = true;
+            }
+            yield return null;
+        }
+
         StartCoroutine(ExplosionCountdownAnimation());
     }
 
+    #region Interaction Events
     public void OnCollisionEnter2D(Collision2D collision)
     {
+        if (!bombLanded)
+        {
+            if (collision.gameObject.CompareTag("tile") || collision.gameObject.CompareTag("base"))
+            {
+                bombLanded = true;
+                rb.velocity = Vector2.zero;
+                rb.isKinematic = true;
+                Debug.Log("Bomba aterrissou!");
+            }
+        }
         if (isThrown)
         {
             if (collision.gameObject.CompareTag("pontos") || collision.gameObject.CompareTag("pontos2"))
             {
+                gameManager.IcebergCrack(collision.gameObject);
                 rb.velocity = Vector2.zero;
                 Explode();
             }
         }
     }
-    public void OnTriggerEnter2D(Collider2D collision)
+
+    public void ShowHighlight()
     {
-        if (isThrown) return;
-        if (collision.gameObject.CompareTag("pin") || collision.gameObject.CompareTag("pon"))
+        if (spriteRenderer != null)
         {
-            collision.gameObject.GetComponent<PinPonPlayerController>()._isBombPickable = true;
-            spriteRenderer.color = new Color(1f, 0.5f, 0.5f);
+            Debug.Log("Mostrando highlight da bomba!");
+            spriteRenderer.color = highlightColor;
         }
     }
-    public void OnTriggerExit2D(Collider2D collision)
+    public void HideHighlight()
     {
-        if (isThrown) return;
-        if (collision.gameObject.CompareTag("pin") || collision.gameObject.CompareTag("pon"))
+        if (spriteRenderer != null)
         {
-            collision.gameObject.GetComponent<PinPonPlayerController>()._isBombPickable = false;
-            spriteRenderer.color = new Color(1f, 1f, 1f);
+            Debug.Log("Escondendo highlight da bomba...");
+            spriteRenderer.color = originalColor;
         }
     }
+    
+    public void Throw(Vector2 direction)
+    {
+        HideHighlight();
+        rb.velocity = direction.normalized * speed;
+        isThrown = true;
+    }
+    #endregion
 
-
+    #region Explosion
     private IEnumerator ExplosionCountdownAnimation()
     {
+        Debug.Log("Iniciando contagem regressiva da bomba...");
+        float initialExplosionTime = explosionTime;
+
+        // Store original visual properties to return to after each blink
+        Vector3 originalScale = transform.localScale;
+        Color originalColor = spriteRenderer.color;
+
+        // --- Define Animation Limits for a smooth and capped progression ---
+        float maxTickInterval = 1.0f; // Longest interval at the beginning
+        float minTickInterval = 0.05f; // Shortest interval at the end
+        float tickScale = 1.2f; // Max size increase at the end
+
         while (explosionTime > 0)
         {
-            // SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-            if (spriteRenderer != null)            
+            // Calculate normalized progress (0 at start, 1 at the end)
+            float progress = 1f - (explosionTime / initialExplosionTime);
+            progress = Mathf.Clamp01(progress);
+
+            // --- Calculate interpolated values based on progress ---
+            // Interval gets shorter as progress -> 1
+            float tickInterval = Mathf.Lerp(maxTickInterval, minTickInterval, progress);
+            
+            // Wait for the calculated interval
+            yield return new WaitForSeconds(tickInterval);
+            explosionTime -= tickInterval;
+
+            // Recalculate progress after waiting, for the blink itself
+            if (explosionTime < 0) explosionTime = 0;
+            progress = 1f - (explosionTime / initialExplosionTime);
+            progress = Mathf.Clamp01(progress);
+
+            if (spriteRenderer != null)
             {
-                float alpha = Mathf.PingPong(Time.time * 2f, 1f)*explosionTime/5f;
-                float scale = 1f + Mathf.PingPong(Time.time, 1f)*explosionTime/5f;
-                float redColor = Mathf.PingPong(Time.time * 2f, 1f)*explosionTime/5f;
 
-                transform.localScale = new Vector3(scale, scale, 1f);
-                spriteRenderer.color = new Color(redColor, 1f, 1f, alpha);
+                // --- Blink Effect ---
+                // Scale multiplier gets larger as progress -> 1
+                transform.localScale = originalScale * tickScale;
+
+                // Color gets redder as progress -> 1 (by reducing green and blue channels)
+                if (spriteRenderer.color != highlightColor)
+                {
+                    Debug.Log("Bomba não está destacada, aplicando efeito de piscar...");
+                    float greenBlueValue = Mathf.Lerp(1f, 0f, progress);
+                    spriteRenderer.color = new Color(1f, greenBlueValue, greenBlueValue);
+                }
+
+
+                // Wait for a short duration for the "blink" to be visible
+                float blinkDuration = 0.1f;
+                yield return new WaitForSeconds(blinkDuration);
+                explosionTime -= blinkDuration; // Account for the time spent blinking
+
+                // Revert to original visuals
+                transform.localScale = originalScale;
+                if (spriteRenderer.color != highlightColor)
+                {
+                    spriteRenderer.color = originalColor;
+                }
             }
-
-            yield return new WaitForSeconds(1f);
-            explosionTime -= 1f;
-
-
         }
 
         Explode();
-    
     }
 
     public void Explode()
     {
-        explosionEffect.SetActive(true);
         rb.velocity = Vector2.zero;
 
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 3f);
@@ -93,13 +175,17 @@ public class BombController : MonoBehaviour
                 }
             }
         }
+        StartCoroutine(ExplosionCoroutine());
+    }
+    public IEnumerator ExplosionCoroutine()
+    {
+        explosionEffect.SetActive(true);
+        yield return new WaitForSeconds(0.07f);
+        spriteRenderer.enabled = false;
+        yield return new WaitForSeconds(0.27f);
 
         Destroy(gameObject);
+        
     }
-    
-    public void Throw(Vector2 direction)
-    {
-        rb.velocity = direction.normalized * speed;
-        isThrown = true;
-    }
+    #endregion
 }
