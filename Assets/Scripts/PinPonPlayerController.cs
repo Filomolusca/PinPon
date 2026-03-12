@@ -35,7 +35,12 @@ namespace PinPon
 
         [Header("Bomb")]
         public GameObject aimLine;
-        // public bool _isBombPickable = false;
+        [Tooltip("Quantos pontos a linha de trajetória terá.")]
+        [SerializeField] private int _trajectoryPointCount = 20;
+        [Tooltip("O intervalo de tempo entre os pontos da trajetória. Afeta o comprimento da previsão.")]
+        [SerializeField] private float _trajectoryTimeStep = 0.1f;
+        [Tooltip("A densidade dos pontos na linha. Aumente para mais pontos no mesmo espaço.")]
+        [SerializeField] private float _dotDensity = 1f;
         private bool _isBombHeld = false;
         private GameObject bombToLaunch;
         private List<BombController> _collectibleBombs = new List<BombController>();
@@ -86,11 +91,11 @@ namespace PinPon
         {
             _time += Time.deltaTime;
 
-            if (_fallDownInput)
-            {
-                if (_grounded) HandleFallThrough();
-                _fallDownInput = false;
-            }
+            // if (_fallDownInput)
+            // {
+            //     if (_grounded) HandleFallThrough();
+            //     _fallDownInput = false;
+            // }
 
             UpdateAnimator();
         }
@@ -174,7 +179,11 @@ namespace PinPon
         {
             if (context.started)
             {
+
                 _fallDownInput = true;
+                _fallToConsume = true;
+                _timeFallWasPressed = _time;
+
             }
         }
 
@@ -198,12 +207,21 @@ namespace PinPon
             _moveInput = Vector2.zero;
             _jumpHeldInput = false;
             _fallDownInput = false;
+            _rb.gravityScale = 0;
+            _rb.velocity = Vector2.zero;
+            _rb.isKinematic = true;
+
             _movementBlocked = true;
         }
         public void UnblockMovement()
         {
             if (_movementBlocked)
-            _movementBlocked = false;
+                {
+                    _movementBlocked = false;
+                    
+                    _rb.isKinematic = false;
+                    _rb.gravityScale = 1;
+                }
         }
 
         private void FixedUpdate()
@@ -214,6 +232,7 @@ namespace PinPon
                 return;
 
             HandleJump();
+            HandleFallThrough();
             HandleDirection();
             HandleGravity();
             
@@ -266,6 +285,7 @@ namespace PinPon
                 _grounded = true;
                 _coyoteUsable = true;
                 _bufferedJumpUsable = true;
+                _bufferedFallUsable = true;
                 _endedJumpEarly = false;
                 GroundedChanged?.Invoke(true, Mathf.Abs(_frameVelocity.y));
 
@@ -326,9 +346,26 @@ namespace PinPon
 
         #endregion
         #region Fall Through
-
+        private bool _fallToConsume;
+        private bool _bufferedFallUsable;
+        private float _timeFallWasPressed;
+        private bool HasBufferedFall => _bufferedFallUsable && _time < _timeFallWasPressed + _stats.FallBuffer;
         private void HandleFallThrough()
         {
+            if (!_fallToConsume && !HasBufferedFall) return;
+
+            if (_grounded || CanUseCoyote) ExecuteFall();
+
+            _fallToConsume = false;
+
+        }
+
+        private void ExecuteFall()
+        {
+            _timeFallWasPressed = 0;
+            _bufferedFallUsable = false;
+            _coyoteUsable = false;
+
             RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1f, ~_stats.PlayerLayer);
 
             if (hit.collider != null)
@@ -486,7 +523,7 @@ namespace PinPon
         #region Bomb
         public void AddCollectible(BombController bomb)
         {
-            if (!_collectibleBombs.Contains(bomb))
+            if (!_collectibleBombs.Contains(bomb) && !bomb.isThrown && bomb.bombLanded)
             {
                 Debug.Log("Adicionando bomba coletável à lista do jogador.");
                 _collectibleBombs.Add(bomb);
@@ -540,24 +577,38 @@ namespace PinPon
         {
             BlockMovement();
             var lineRenderer = aimLine.GetComponent<LineRenderer>();
+            var bombController = bombToLaunch.GetComponent<BombController>();
+
+            // LEMBRETE: Configure o "Texture Mode" do LineRenderer para "Tile" no Inspector!
+
             aimLine.SetActive(true);
             while (_isBombHeld)
             {
+                var playerCamera = GetComponent<PlayerInput>().camera;
+                if (playerCamera == null) yield return null; 
+
                 var initialPosition = bombToLaunch.transform.position;
-                var mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-                var launchDirection = (mousePosition - (Vector2)transform.position).normalized;
-                var initialVelocity = launchDirection * 6f;
+                var mouseScreenPos = Mouse.current.position.ReadValue();
+                var mouseWorldPos = (Vector2)playerCamera.ScreenToWorldPoint(mouseScreenPos);
+                
+                var launchDirection = (mouseWorldPos - (Vector2)transform.position).normalized;
+                var initialVelocity = launchDirection * bombController.speed;
 
-                // var futurePosition = initialPosition + (initialVelocity * Time.time) + (Physics2D.gravity * Time.time * Time.time / 2f);
+                var linePoints = new Vector3[_trajectoryPointCount];
+                float lineLength = 0f;
+                linePoints[0] = initialPosition;
 
-                var linePoints = new Vector3[20];
-                for (int i = 0; i < 20; i++)
+                for (int i = 1; i < linePoints.Length; i++)
                 {
-                    float t = i * 0.1f;
+                    float t = i * _trajectoryTimeStep;
                     linePoints[i] = (Vector2)initialPosition + (initialVelocity * t) + (Physics2D.gravity * t * t / 2f);
+                    lineLength += Vector3.Distance(linePoints[i], linePoints[i-1]);
                 }
                 lineRenderer.positionCount = linePoints.Length;
                 lineRenderer.SetPositions(linePoints);
+
+                // Usa a densidade do ponto definida no Inspector
+                lineRenderer.material.mainTextureScale = new Vector2(lineLength * _dotDensity, 1f);
 
                 yield return null;
             }
@@ -595,7 +646,10 @@ namespace PinPon
             bombObject.transform.SetParent(null);
             bombRb.isKinematic = false;
 
-            var mousePosition = (Vector2)Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+            var playerCamera = GetComponent<PlayerInput>().camera;
+            if (playerCamera == null) return; // Adiciona uma verificação de segurança
+
+            var mousePosition = (Vector2)playerCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             var launchDirection = (mousePosition - (Vector2)transform.position).normalized;
 
             bombController.Throw(launchDirection);
@@ -614,17 +668,12 @@ namespace PinPon
             {
                 duration -= Time.deltaTime;
 
-                _rb.isKinematic = true;
-                _frameVelocity = Vector2.zero;
-                _moveInput = Vector2.zero;
-                _jumpHeldInput = false;
-                _rb.gravityScale = 0;
+                BlockMovement();
 
                 yield return null;
             }
 
-            _rb.isKinematic = false;
-            _rb.gravityScale = 1f;
+            UnblockMovement();
         }
 
 

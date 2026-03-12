@@ -58,7 +58,11 @@ public class ball_movement : MonoBehaviour
             }
         }
         
-        if(SnowballHit != null) audioSource.PlayOneShot(SnowballHit);
+        if(SnowballHit != null)
+        { 
+            if (audioSource != null)
+            audioSource.PlayOneShot(SnowballHit);
+        }
 
         if (collision.gameObject.GetComponent<BouncesAndSpeedsUpBall>() != null)
         {

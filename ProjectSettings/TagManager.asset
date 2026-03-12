@@ -19,6 +19,7 @@ TagManager:
   - spawnBall
   - SpawnPoint
   - Bomb
+  - snowman
   layers:
   - Default
   - TransparentFX
@@ -33,8 +34,8 @@ TagManager:
   - limites
   - bomb
   - pickupArea
-  - 
-  - 
+  - base
+  - ThrownBomb
   - 
   - 
   - 

@@ -19,7 +19,7 @@ public class snowman : MonoBehaviour
     public AudioClip snowmanHit; 
     public AudioClip snowmanThrowBall; 
 
-    private int hp; 
+    public int hp; 
     private int currentBalls;
     private bool hasCollided = false;
 
@@ -36,12 +36,6 @@ public class snowman : MonoBehaviour
         animator.SetInteger("HP", hp);
         animator.SetBool("hasCollided", hasCollided);
 
-        if (hp <= 0)
-        {
-            animator.Play("Snowman_Throw_Ball");
-            LaunchBall();
-            hp = initialHP; // Reseta a vida após jogar a bola
-        }
     }
 
     public void RestartSnowman()
@@ -49,14 +43,34 @@ public class snowman : MonoBehaviour
         currentBalls = 0;
         hp = initialHP;
         hasCollided = false;
-        animator.Play("Snowman_Throw_Ball");
-        if(snowmanThrowBall != null) audioSource.PlayOneShot(snowmanThrowBall);
+
         LaunchBall();
     }
 
+    public void GetHit()
+    {
+        if (currentBalls < maxBalls)
+        {
+            if(snowmanHit != null) audioSource.PlayOneShot(snowmanHit);
+            hp--;
+            hasCollided = true; 
+            StartCoroutine(ResetCollision()); 
+
+            if (hp <= 0)
+            LaunchBall();
+        }
+        else
+        {
+                Debug.Log("Snowman atingiu o limite de bolas em cena. Não pode ser atingido.");
+        }
+    }
     private void LaunchBall()
     {
         if (currentBalls >= maxBalls) return;
+
+        hp = initialHP; 
+        animator.Play("Snowman_Throw_Ball");
+        if(snowmanThrowBall != null) audioSource.PlayOneShot(snowmanThrowBall);
         
         GameObject newBallGO = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation);
         ball_movement newBallScript = newBallGO.GetComponent<ball_movement>();
@@ -80,11 +94,9 @@ public class snowman : MonoBehaviour
     {
         if (!hasCollided && collision.gameObject.CompareTag("bola"))
         {
-            if(snowmanHit != null) audioSource.PlayOneShot(snowmanHit);
-            hp--;
-            hasCollided = true; 
-            StartCoroutine(ResetCollision()); 
+            GetHit();
         }
+
     }
 
     private IEnumerator ResetCollision()

@@ -438,6 +438,9 @@ MonoBehaviour:
   _hitZoneTime: 0.2
   _hitZoneObject: {fileID: 7449891822010310374}
   aimLine: {fileID: 6568413261791192660}
+  _trajectoryPointCount: 50
+  _trajectoryTimeStep: 1
+  _dotDensity: 1
   assignedIceberg: {fileID: -8124270933684972993, guid: 3c89bb14f2b697b4b8529beb9601a59d, type: 3}
   _movementBlocked: 0
   trailRenderer: {fileID: 1842856762178829326}
@@ -550,7 +553,7 @@ MonoBehaviour:
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: 9000792199695218525, guid: 4e3818e24bc5916458eed20552629d2c, type: 3}
 --- !u!1 &3862170262724037371
 GameObject:
   m_ObjectHideFlags: 0
@@ -777,7 +780,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3005640513710146693
 Transform:
   m_ObjectHideFlags: 0
@@ -832,15 +835,37 @@ LineRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: 1150771695
+  m_SortingLayer: 5
+  m_SortingOrder: 3
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
+  - {x: -7.044905, y: -3.8824358, z: 2.9418478}
+  - {x: -8.069695, y: -3.5353298, z: 2.9418478}
+  - {x: -9.127543, y: -3.4526856, z: 2.9418478}
+  - {x: -9.540765, y: -4.444418, z: 2.9418478}
+  - {x: -7.7744923, y: -1.3235581, z: 2.5071092}
+  - {x: -7.09582, y: -0.17503667, z: 2.5071092}
+  - {x: -6.3475413, y: 0.6428497, z: 2.5071092}
+  - {x: -5.355636, y: 1.2345123, z: 2.5071092}
+  - {x: -4.363732, y: 1.4607363, z: 2.5071092}
+  - {x: -3.5110419, y: 0.79946613, z: 2.5071092}
+  - {x: -3.1978076, y: -0.3838588, z: 2.5071092}
+  - {x: -3.6850603, y: -1.3757637, z: 2.5071092}
+  - {x: -0.7740388, y: -1.2980037, z: -3.9987993}
+  - {x: -1.5966206, y: -0.6582198, z: -3.9987993}
+  - {x: -2.601993, y: 0.19482589, z: -3.9987993}
+  - {x: -4.003425, y: 0.8955414, z: -3.9987993}
+  - {x: -5.252529, y: 1.2915986, z: -3.9987993}
+  - {x: -6.532098, y: 1.2915986, z: -3.9987993}
+  - {x: -8.512382, y: 0.8650758, z: -3.9987993}
+  - {x: -10.279405, y: 0.40808725, z: -3.9987993}
+  - {x: -11.741768, y: -0.35356045, z: -3.9987993}
+  - {x: -12.777609, y: -1.1456742, z: -3.9987993}
+  - {x: -13.478325, y: -2.1205835, z: -3.9987993}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.05
+    widthMultiplier: 0.2
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -895,7 +920,7 @@ LineRenderer:
     generateLightingData: 0
   m_MaskInteraction: 0
   m_UseWorldSpace: 1
-  m_Loop: 0
+  m_Loop: 1
   m_ApplyActiveColorSpace: 1
 --- !u!1 &7449891822010310374
 GameObject:

@@ -280,6 +280,7 @@ public class GameManager : MonoBehaviour
     }
     public void RestartGame()
     {
+        
         if(!isFirstRound)
         {
             StartCoroutine(Fade(1f));
@@ -303,6 +304,8 @@ public class GameManager : MonoBehaviour
         var bombs = GameObject.FindGameObjectsWithTag("Bomb");
         foreach (var bomb in bombs)
         {
+            BombController bombScript = bomb.GetComponent<BombController>();
+            if (bombScript != null && !bombScript.isExploding)
             Destroy(bomb);
         }
         // score.ballCounterValue = 1;
@@ -473,17 +476,17 @@ public class GameManager : MonoBehaviour
 
     #region Bomb
 
-
+    public float bombSpawnY;
     public  IEnumerator WaitForBombSpawn()
     {
-        float spawnTime = Random.Range(1f, 5f);
+        float spawnTime = Random.Range(10f, 20f);
         yield return new WaitForSeconds(spawnTime);
 
         float pinIcebergX = icebergPinPrefab.transform.position.x;
         float ponIcebergX = icebergPonPrefab.transform.position.x;
         bool spawnOnPinSide = Random.value < 0.5f;
         float spawnX = spawnOnPinSide ? Random.Range(pinIcebergX - pinIcebergX/3f, pinIcebergX + pinIcebergX/3f) : Random.Range(ponIcebergX + ponIcebergX/3f, ponIcebergX - ponIcebergX/3f);
-        float spawnY = 4.5f;
+        float spawnY = bombSpawnY;
 
         SpawnBomb(new Vector2(spawnX, spawnY));
         Debug.Log("Bomb spawned after " + spawnTime + " seconds at position: " + new Vector2(spawnX, spawnY));

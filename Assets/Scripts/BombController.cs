@@ -13,7 +13,8 @@ public class BombController : MonoBehaviour
     public GameManager gameManager;
     public bool isThrown = false;
     public bool bombLanded = false;
-
+    public bool isExploding = false;
+    public float spawnWaitTime;
     private Color highlightColor = new Color(1f, 1f, 0.5f);
     private Color originalColor;
 
@@ -30,8 +31,15 @@ public class BombController : MonoBehaviour
 
     private IEnumerator WaitForLanding()
     {
+        rb.simulated = false;
+        
+        yield return new WaitForSeconds(spawnWaitTime);
+
+        rb.simulated = true;
+
         while (!bombLanded)
         {
+
             if (rb.velocity.magnitude < 0.1f && isThrown)
             {
                 rb.velocity = Vector2.zero;
@@ -58,15 +66,39 @@ public class BombController : MonoBehaviour
         }
         if (isThrown)
         {
+
             if (collision.gameObject.CompareTag("pontos") || collision.gameObject.CompareTag("pontos2"))
             {
                 gameManager.IcebergCrack(collision.gameObject);
                 rb.velocity = Vector2.zero;
-                Explode();
+                StartCoroutine(ExplosionAnimCoroutine());
             }
-        }
-    }
 
+            if (collision.gameObject.CompareTag("pin") || collision.gameObject.CompareTag("pon"))
+            {
+                PinPonPlayerController playerController = collision.gameObject.GetComponent<PinPonPlayerController>();
+                if (playerController != null)
+                {
+                    playerController.Stun(2f);
+                    rb.velocity = Vector2.zero;
+                    StartCoroutine(ExplosionAnimCoroutine());
+                }
+            }
+                if (collision.gameObject.CompareTag("snowman"))
+                {
+                    snowman snowman = collision.gameObject.GetComponent<snowman>();
+                    if (snowman != null)
+                    {
+                        snowman.hp = 0;
+                        snowman.GetHit();
+                        rb.velocity = Vector2.zero;
+                        StartCoroutine(ExplosionAnimCoroutine());
+                    }
+                }
+
+        }
+
+    }
     public void ShowHighlight()
     {
         if (spriteRenderer != null)
@@ -89,6 +121,29 @@ public class BombController : MonoBehaviour
         HideHighlight();
         rb.velocity = direction.normalized * speed;
         isThrown = true;
+
+        int thrownBombLayer = LayerMask.NameToLayer("ThrownBomb");
+
+        if (thrownBombLayer == -1)
+        {
+            Debug.LogError("Layer 'ThrownBomb' não encontrada. Certifique-se de que a camada existe e está atribuída corretamente.");
+        }
+
+        gameObject.layer = thrownBombLayer;
+
+        foreach (Transform child in transform)
+        {
+            child.gameObject.layer = thrownBombLayer;
+        }
+
+            // int currentLayer = gameObject.layer;
+            // int[] layersToIgnore = {LayerMask.NameToLayer("tile"), LayerMask.NameToLayer("base")};
+
+            // foreach (int layer in layersToIgnore)
+            // {
+            //     Physics2D.IgnoreLayerCollision(currentLayer, layer, true);
+            // }
+
     }
     #endregion
 
@@ -163,9 +218,16 @@ public class BombController : MonoBehaviour
     {
         rb.velocity = Vector2.zero;
 
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 3f);
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 2f);
         foreach (var hitCollider in hitColliders)
         {
+            if (hitCollider.CompareTag("pontos") || hitCollider.CompareTag("pontos2"))
+            {
+                gameManager.IcebergCrack(hitCollider.gameObject);
+                StartCoroutine(ExplosionAnimCoroutine());
+                return;
+            }
+
             if (hitCollider.CompareTag("pin") || hitCollider.CompareTag("pon"))
             {
                 PinPonPlayerController playerController = hitCollider.GetComponent<PinPonPlayerController>();
@@ -174,11 +236,22 @@ public class BombController : MonoBehaviour
                     playerController.Stun(2f); 
                 }
             }
+                if (hitCollider.CompareTag("snowman"))
+                {
+                    snowman snowman = hitCollider.GetComponent<snowman>();
+                    if (snowman != null)
+                    {
+                        snowman.hp = 0;
+                        snowman.GetHit();
+                    }
+                }
+
         }
-        StartCoroutine(ExplosionCoroutine());
+        StartCoroutine(ExplosionAnimCoroutine());
     }
-    public IEnumerator ExplosionCoroutine()
+    public IEnumerator ExplosionAnimCoroutine()
     {
+        isExploding = true;
         explosionEffect.SetActive(true);
         yield return new WaitForSeconds(0.07f);
         spriteRenderer.enabled = false;
