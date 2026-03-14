@@ -16,9 +16,7 @@ public class ball_movement : MonoBehaviour
     public Transform spawnPoint; // Injetado pelo criador
 
     [Header("Efeitos")]
-    private AudioSource audioSource;
-    public AudioClip SnowballHit;
-    public AudioClip IcebergCrack;
+
     private SpriteRenderer spriteRenderer;
     public TrailRenderer trailRenderer;
 
@@ -27,7 +25,6 @@ public class ball_movement : MonoBehaviour
         // Inicializa componentes locais no Awake para garantir que estejam prontos.
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
-        audioSource = GetComponent<AudioSource>();
     }
 
     void FixedUpdate()
@@ -58,11 +55,7 @@ public class ball_movement : MonoBehaviour
             }
         }
         
-        if(SnowballHit != null)
-        { 
-            if (audioSource != null)
-            audioSource.PlayOneShot(SnowballHit);
-        }
+        SoundManager.Instance.PlaySFX("SnowballHit");
 
         if (collision.gameObject.GetComponent<BouncesAndSpeedsUpBall>() != null)
         {

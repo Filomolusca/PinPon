@@ -11,7 +11,6 @@ public class Seagull : MonoBehaviour
 
     public GameManager gameManager;
 
-    // public AudioClip seagullHit;
 
     // Start is called before the first frame update
     void Start()

@@ -13,8 +13,6 @@ public class iceberg : MonoBehaviour
     public GameObject goal; // O objeto do gol que também deve descer
 
     [Header("Efeitos")]
-    public AudioClip icebergDestroySound;
-
     // --- Referências Injetadas ---
     private GameManager gameManager;
     private Score score;
@@ -24,15 +22,12 @@ public class iceberg : MonoBehaviour
     private GameObject[] _stageObjects;
     private int _previousStages;
     private bool _scoreUpdated = false;
-    private AudioSource audioSource;
 
     void Start()
     {
         // Configura o array de estágios para fácil acesso
         _stageObjects = new GameObject[] { stage1, stage2, stage3, stage4 };
         _previousStages = Stages;
-        audioSource = GetComponent<AudioSource>();
-        if(audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     /// <summary>
@@ -51,8 +46,7 @@ public class iceberg : MonoBehaviour
         if (Stages < _previousStages)
         {
             Debug.Log($"Estágio destruído! Estágios restantes: {Stages}");
-            if (icebergDestroySound != null) audioSource.PlayOneShot(icebergDestroySound);
-
+            SoundManager.Instance.PlaySFX("IcebergDestroy");
             UpdateVisuals();
             MoveRemainingStagesDown();
             MoveGoalDown();

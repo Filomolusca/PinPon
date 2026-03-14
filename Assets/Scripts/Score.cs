@@ -20,8 +20,7 @@ public class Score : MonoBehaviour
     // public GameObject ballCounter;
     // public TextMeshProUGUI ballCounterText;
     // public float ballCounterValue;
-    // private AudioSource audioSource;
-    // public AudioClip WinnerSound;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -51,14 +50,12 @@ public class Score : MonoBehaviour
             Winner.text = "Pinguin Wins!";
             Winner.color = Color.red;
             gameManager.GameOver();
-            // audioSource.PlayOneShot(WinnerSound);
         }
         if (ScorePon == ScoreGoal)
         {           
             Winner.text = "Ponguin Wins!";
             Winner.color =Color.blue;
             gameManager.GameOver();
-            // audioSource.PlayOneShot(WinnerSound);
         }
         // if (ballCounterValue >= 1)
         // {

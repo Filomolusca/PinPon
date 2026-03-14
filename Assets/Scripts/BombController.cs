@@ -5,7 +5,7 @@ using PinPon;
 
 public class BombController : MonoBehaviour
 {
-    public float explosionTime = 5f;
+    public float explosionTime;
     public GameObject explosionEffect;
     public float speed;
     private Rigidbody2D rb;
@@ -67,34 +67,13 @@ public class BombController : MonoBehaviour
         if (isThrown)
         {
 
-            if (collision.gameObject.CompareTag("pontos") || collision.gameObject.CompareTag("pontos2"))
+            if (collision.gameObject.CompareTag("pontos") || collision.gameObject.CompareTag("pontos2") || collision.gameObject.CompareTag("pin") || collision.gameObject.CompareTag("pon") || collision.gameObject.CompareTag("snowman"))
             {
-                gameManager.IcebergCrack(collision.gameObject);
                 rb.velocity = Vector2.zero;
-                StartCoroutine(ExplosionAnimCoroutine());
+                Explode();
+                return;
             }
-
-            if (collision.gameObject.CompareTag("pin") || collision.gameObject.CompareTag("pon"))
-            {
-                PinPonPlayerController playerController = collision.gameObject.GetComponent<PinPonPlayerController>();
-                if (playerController != null)
-                {
-                    playerController.Stun(2f);
-                    rb.velocity = Vector2.zero;
-                    StartCoroutine(ExplosionAnimCoroutine());
-                }
-            }
-                if (collision.gameObject.CompareTag("snowman"))
-                {
-                    snowman snowman = collision.gameObject.GetComponent<snowman>();
-                    if (snowman != null)
-                    {
-                        snowman.hp = 0;
-                        snowman.GetHit();
-                        rb.velocity = Vector2.zero;
-                        StartCoroutine(ExplosionAnimCoroutine());
-                    }
-                }
+                
 
         }
 
@@ -198,7 +177,7 @@ public class BombController : MonoBehaviour
 
 
                 // Wait for a short duration for the "blink" to be visible
-                float blinkDuration = 0.1f;
+                float blinkDuration = 0.2f;
                 yield return new WaitForSeconds(blinkDuration);
                 explosionTime -= blinkDuration; // Account for the time spent blinking
 
@@ -216,6 +195,8 @@ public class BombController : MonoBehaviour
 
     public void Explode()
     {
+        if (isExploding) return;
+        StopCoroutine(ExplosionCountdownAnimation());
         rb.velocity = Vector2.zero;
 
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, 2f);

@@ -19,8 +19,6 @@ namespace PinPon
         private bool _isFacingLeft;
         private int _playerLayer;
         private int _platformLayer;
-        public AudioClip jumpSound;
-        private AudioSource audioSource;
         
         [Header("Hitting")]
         [SerializeField] private GameObject _racquetObject;
@@ -63,7 +61,6 @@ namespace PinPon
             _rb = GetComponent<Rigidbody2D>();
             _col = GetComponent<CapsuleCollider2D>();
             _anim = GetComponent<Animator>();
-            audioSource = GetComponent<AudioSource>();
             PlayerIndex = GetComponent<PlayerInput>().playerIndex;
             // trailRenderer = GetComponent<TrailRenderer>();
             trailRenderer.emitting = false;
@@ -322,7 +319,8 @@ namespace PinPon
 
         private IEnumerator DashCoroutine()
         {
-            audioSource.PlayOneShot(jumpSound);
+            SoundManager.Instance.PlaySFX("Jump");
+
             trailRenderer.emitting = true;
 
             Debug.Log("Iniciando Dash!");
@@ -411,7 +409,7 @@ namespace PinPon
             _coyoteUsable = false;
             _frameVelocity.y = _stats.JumpPower;
             
-            audioSource.PlayOneShot(jumpSound);
+            SoundManager.Instance.PlaySFX("Jump");
             Jumped?.Invoke();
         }
 

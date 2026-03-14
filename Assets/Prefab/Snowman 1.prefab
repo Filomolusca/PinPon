@@ -102,16 +102,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2ba8e8fa66ee1240ad4f09fbb712454, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialHP: 2
+  initialHP: 3
   maxBalls: 3
   ballPrefab: {fileID: 6628311047240206482, guid: 87d1cd2cae12dc44ebdca4a23e429d2d, type: 3}
   spawnPoint: {fileID: 1517178591433528594, guid: ee6d46aa75990534283707d1453330e2, type: 3}
   gameManager: {fileID: 0}
   score: {fileID: 0}
   animator: {fileID: 444105648399903292}
-  audioSource: {fileID: 6977375636673381550}
-  snowmanHit: {fileID: 8300000, guid: a1b72d3e1f867274b8b9e8857400b94c, type: 3}
-  snowmanThrowBall: {fileID: 8300000, guid: 55d8facb24576d64486c6e2304f82a65, type: 3}
+  hp: 0
 --- !u!95 &444105648399903292
 Animator:
   serializedVersion: 5

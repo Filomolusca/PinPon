@@ -10,7 +10,6 @@ public class Lobby : MonoBehaviour
     public GameObject beginButton;
     public GameObject player1; // UI para indicar que o Player 1 conectou
     public GameObject player2; // UI para indicar que o Player 2 conectou
-    public AudioSource lobbyMusic;
 
     private InputAction startGameAction;
     private bool canStartGame = false;
@@ -25,11 +24,11 @@ public class Lobby : MonoBehaviour
 
     void Start()
     {
+        SoundManager.Instance.PlayMusic("LobbyMusic");
         // Garante que a UI comece no estado correto
         player1.SetActive(true);
         player2.SetActive(true);
         beginButton.SetActive(false);
-        lobbyMusic.Play();
         
         // Garante que a ação de start esteja desabilitada no início
         startGameAction.Disable();
@@ -96,11 +95,10 @@ public class Lobby : MonoBehaviour
         // Desabilita a ação para prevenir múltiplos cliques
         startGameAction.Disable();
         canStartGame = false;
-
+        // SoundManager.instance.FadeMusic(0f, 1f);
         PlayerPrefs.SetInt("ScorePin", 0);
         PlayerPrefs.SetInt("ScorePon", 0);
         SceneManager.LoadScene("Match");
-        lobbyMusic.Stop();
     }
 
     public void QuitGame()

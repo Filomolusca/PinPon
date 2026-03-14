@@ -29,13 +29,10 @@ public class GameManager : MonoBehaviour
 
     
     [Header("Outros Sistemas")]
-    public AudioSource ostMatch;
     public Transform spawnSeagullPin;
     public Transform spawnSeagullPon;
     public GameObject seagullPinPrefab;
     public GameObject seagullPonPrefab;
-    public AudioSource sfxSource;
-    public AudioClip seagullHitSound;
     public snowman snowman;
     public GameObject snowExplosionEffectPin;
     public GameObject snowExplosionEffectPon;
@@ -163,17 +160,44 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
         StartCoroutine(WaitForSpace());
             
-        if (!isFirstRound)
+        // if (isFirstRound)
+        // {
+        //     SoundManager.Instance.PlaySound("Whistle");
+        // }
+        // else
+        // {
+        //     isFirstRound = false;
+        // }
+      // SoundManager.Instance.PlayTheme("MatchMusic");
+    }
+    private IEnumerator WaitForSpace()
+    {
+        yield return null; 
+        while (!Input.GetButtonDown("Submit") && !Input.GetKeyDown(KeyCode.Space))
         {
-            if (RoundScreen.TryGetComponent(out AudioSource audioSource)) audioSource.Play();
-        }
-        else
-        {
-            isFirstRound = false;
+            yield return null;
         }
 
+        // First, restore the game to a running state
+        EnablePlayerInputs();
+        Debug.Log("Round Começou!");
+        Time.timeScale = 1f;
+        snowman.RestartSnowman();
+        RoundScreen.SetActive(false);
         StartCoroutine(WaitForBombSpawn());
+
+        // IMPORTANT: Wait for the next frame AFTER timeScale is 1
+        yield return null;
+
+        // Now, play sounds in a stable frame
+        SoundManager.Instance.PlayMusic("MatchMusic");
+        if (isFirstRound)
+        {
+            SoundManager.Instance.PlaySFX("Whistle", 1f);
+            isFirstRound = false;
+        }
     }
+    
 
     #endregion
 
@@ -213,20 +237,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private IEnumerator WaitForSpace()
-    {
-        yield return null; 
-        while (!Input.GetButtonDown("Submit") && !Input.GetKeyDown(KeyCode.Space))
-        {
-            yield return null;
-        }
-        
-        EnablePlayerInputs();
-        if(ostMatch != null) ostMatch.Play();
-        Debug.Log("Round Começou!");
-        Time.timeScale = 1f;
-        RoundScreen.SetActive(false);
-    }
+
 
     #endregion
 
@@ -280,6 +291,8 @@ public class GameManager : MonoBehaviour
     }
     public void RestartGame()
     {
+        Debug.Log("Restarting game...");
+        StopAllCoroutines();
         
         if(!isFirstRound)
         {
@@ -292,6 +305,10 @@ public class GameManager : MonoBehaviour
             if(activePlayers[i] != null)
             {
                 activePlayers[i].transform.position = initialPositions[i];
+                foreach (var player in activePlayers)
+                {
+                    player.GetComponent<PinPonPlayerController>().UnblockMovement();
+                }
             }
         }
 
@@ -317,6 +334,7 @@ public class GameManager : MonoBehaviour
             snowman.RestartSnowman();
         }
 
+        ResetSeagulls();
         StartCoroutine(WaitForBombSpawn());
 
     }
@@ -432,7 +450,7 @@ public class GameManager : MonoBehaviour
     {
         if (seagullInstance != null)
         {
-            sfxSource.PlayOneShot(seagullHitSound);        
+            SoundManager.Instance.PlaySFX("SeagullDeath");
             StartCoroutine(DestroySeagull(seagullInstance));
         }
     }
@@ -480,6 +498,8 @@ public class GameManager : MonoBehaviour
     public  IEnumerator WaitForBombSpawn()
     {
         float spawnTime = Random.Range(10f, 20f);
+        Debug.Log("Waiting for bomb spawn...");
+        
         yield return new WaitForSeconds(spawnTime);
 
         float pinIcebergX = icebergPinPrefab.transform.position.x;

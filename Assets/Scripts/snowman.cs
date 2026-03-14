@@ -15,9 +15,6 @@ public class snowman : MonoBehaviour
 
     [Header("Efeitos")]
     public Animator animator;
-    public AudioSource audioSource;
-    public AudioClip snowmanHit; 
-    public AudioClip snowmanThrowBall; 
 
     public int hp; 
     private int currentBalls;
@@ -27,8 +24,7 @@ public class snowman : MonoBehaviour
     {
         hp = initialHP;
         if(animator == null) animator = GetComponent<Animator>();
-        if(audioSource == null) audioSource = GetComponent<AudioSource>();
-        RestartSnowman();
+        // RestartSnowman();
     }
 
     void Update()
@@ -51,7 +47,7 @@ public class snowman : MonoBehaviour
     {
         if (currentBalls < maxBalls)
         {
-            if(snowmanHit != null) audioSource.PlayOneShot(snowmanHit);
+            SoundManager.Instance.PlaySFX("SnowmanHit");
             hp--;
             hasCollided = true; 
             StartCoroutine(ResetCollision()); 
@@ -70,7 +66,7 @@ public class snowman : MonoBehaviour
 
         hp = initialHP; 
         animator.Play("Snowman_Throw_Ball");
-        if(snowmanThrowBall != null) audioSource.PlayOneShot(snowmanThrowBall);
+        SoundManager.Instance.PlaySFX("SnowmanThrow");
         
         GameObject newBallGO = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation);
         ball_movement newBallScript = newBallGO.GetComponent<ball_movement>();

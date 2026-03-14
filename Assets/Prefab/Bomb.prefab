@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0183914de0f355d4fa7d26a1f6f40a44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  explosionTime: 15
+  explosionTime: 8
   explosionEffect: {fileID: 4595707746246396472}
   speed: 6
   gameManager: {fileID: 0}
